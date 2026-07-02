@@ -2,7 +2,6 @@ import { auth, db, onAuthStateChanged, signOut, ref, get, isFirebaseConfigured }
 
 document.addEventListener("DOMContentLoaded", () => {
   renderNavbar();
-  renderFirebaseConfigModalIfNeeded();
 });
 
 async function renderNavbar() {
@@ -128,7 +127,6 @@ async function renderNavbar() {
           ` : `
             <a href="auth.html" class="btn btn-primary btn-sm" style="border-radius: 100px; padding: 0.5rem 1.5rem;">Sign In</a>
           `}
-          <button class="btn btn-outline btn-sm firebase-setup-trigger-btn" style="border-radius: 100px; font-size: 0.75rem; padding: 0.4rem 0.8rem; margin-left: 0.5rem;">⚙ Firebase Setup</button>
         </div>
       </div>
     `;
@@ -181,104 +179,5 @@ async function renderNavbar() {
         signOut(auth).then(() => { window.location.href = "index.html"; });
       });
     }
-
-    document.querySelectorAll(".firebase-setup-trigger-btn").forEach(btn => {
-      btn.addEventListener("click", (e) => { e.preventDefault(); openFirebaseConfigModal(); });
-    });
   });
-}
-
-function renderFirebaseConfigModalIfNeeded() {
-  if (!isFirebaseConfigured()) {
-    setTimeout(() => { openFirebaseConfigModal(true); }, 1000);
-  }
-}
-
-function openFirebaseConfigModal(showWarning = false) {
-  let modal = document.getElementById("firebase-setup-modal");
-  if (!modal) {
-    modal = document.createElement("div");
-    modal.id = "firebase-setup-modal";
-    modal.style.cssText = `
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
-      display: flex; align-items: center; justify-content: center;
-      z-index: 99999; font-family: 'Plus Jakarta Sans', sans-serif;
-    `;
-    modal.innerHTML = `
-      <div style="background: white; border-radius: 16px; padding: 2rem; width: 90%; max-width: 500px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; box-sizing: border-box; max-height: 90vh; overflow-y: auto;">
-        <h3 style="margin-top: 0; color: #1e293b; font-size: 1.2rem; font-weight: 700;">🔥 Firebase Setup (Realtime Database)</h3>
-        ${showWarning ? `
-          <div style="background: #fef3c7; color: #92400e; padding: 0.75rem; border-radius: 8px; font-size: 0.82rem; margin-bottom: 1rem; border: 1px solid #fde68a;">
-            <strong>Setup Required:</strong> Enter your Firebase credentials to connect the database. They are saved only in your browser (localStorage).
-          </div>
-        ` : ""}
-        <div style="background: #f0fdf4; color: #166534; padding: 0.75rem; border-radius: 8px; font-size: 0.8rem; margin-bottom: 1.25rem; border: 1px solid #bbf7d0;">
-          Using <strong>Realtime Database</strong> — No billing or credit card required! ✅
-        </div>
-        <form id="firebase-setup-form" style="display: flex; flex-direction: column; gap: 0.75rem;">
-          <div>
-            <label style="font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 4px;">API Key</label>
-            <input type="text" id="fb-apiKey" required style="width: 100%; padding: 0.6rem 0.8rem; border-radius: 8px; border: 1px solid #e2e8f0; box-sizing: border-box; font-size: 0.85rem;" placeholder="AIzaSy...">
-          </div>
-          <div>
-            <label style="font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 4px;">Auth Domain</label>
-            <input type="text" id="fb-authDomain" required style="width: 100%; padding: 0.6rem 0.8rem; border-radius: 8px; border: 1px solid #e2e8f0; box-sizing: border-box; font-size: 0.85rem;" placeholder="your-project.firebaseapp.com">
-          </div>
-          <div>
-            <label style="font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 4px;">Project ID</label>
-            <input type="text" id="fb-projectId" required style="width: 100%; padding: 0.6rem 0.8rem; border-radius: 8px; border: 1px solid #e2e8f0; box-sizing: border-box; font-size: 0.85rem;" placeholder="your-project-id">
-          </div>
-          <div>
-            <label style="font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 4px;">
-              Database URL <span style="color: #dc2626;">★ Required for Realtime DB</span>
-            </label>
-            <input type="text" id="fb-databaseURL" required style="width: 100%; padding: 0.6rem 0.8rem; border-radius: 8px; border: 1px solid #fca5a5; box-sizing: border-box; font-size: 0.85rem;" placeholder="https://your-project-default-rtdb.firebaseio.com">
-            <small style="color: #64748b; font-size: 0.72rem;">Find this in Firebase Console → Realtime Database → copy the URL at the top</small>
-          </div>
-          <div>
-            <label style="font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 4px;">App ID</label>
-            <input type="text" id="fb-appId" required style="width: 100%; padding: 0.6rem 0.8rem; border-radius: 8px; border: 1px solid #e2e8f0; box-sizing: border-box; font-size: 0.85rem;" placeholder="1:123456789:web:abc...">
-          </div>
-          <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
-            <button type="button" id="close-fb-modal" style="flex: 1; padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; background: white; cursor: pointer; font-weight: 600;">Cancel</button>
-            <button type="submit" style="flex: 2; padding: 0.6rem; border-radius: 8px; border: none; background: #6366f1; color: white; cursor: pointer; font-weight: 700;">Save & Reload</button>
-          </div>
-        </form>
-      </div>
-    `;
-    document.body.appendChild(modal);
-
-    const stored = localStorage.getItem("firebase_config");
-    if (stored) {
-      try {
-        const config = JSON.parse(stored);
-        document.getElementById("fb-apiKey").value = config.apiKey || "";
-        document.getElementById("fb-authDomain").value = config.authDomain || "";
-        document.getElementById("fb-projectId").value = config.projectId || "";
-        document.getElementById("fb-databaseURL").value = config.databaseURL || "";
-        document.getElementById("fb-appId").value = config.appId || "";
-      } catch (e) {}
-    }
-
-    document.getElementById("close-fb-modal").addEventListener("click", () => { modal.style.display = "none"; });
-
-    document.getElementById("firebase-setup-form").addEventListener("submit", (e) => {
-      e.preventDefault();
-      const projectId = document.getElementById("fb-projectId").value.trim();
-      const newConfig = {
-        apiKey: document.getElementById("fb-apiKey").value.trim(),
-        authDomain: document.getElementById("fb-authDomain").value.trim(),
-        projectId: projectId,
-        databaseURL: document.getElementById("fb-databaseURL").value.trim(),
-        storageBucket: `${projectId}.appspot.com`,
-        messagingSenderId: "",
-        appId: document.getElementById("fb-appId").value.trim()
-      };
-      localStorage.setItem("firebase_config", JSON.stringify(newConfig));
-      window.location.reload();
-    });
-  } else {
-    modal.style.display = "flex";
-  }
 }

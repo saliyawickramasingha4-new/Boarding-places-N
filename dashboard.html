@@ -105,91 +105,111 @@
                   </div>
                   
                   <form id="add-property-form">
-                      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem;">
-                          <div class="input-group" style="grid-column: span 2; margin-bottom: 0;">
-                              <label>Property Title</label>
-                              <input type="text" id="prop-title" placeholder="e.g. Modern Studio near SUSL" required>
-                          </div>
-
-                          <div class="input-group" style="margin-bottom: 0;">
-                              <label>Monthly Rent (LKR)</label>
-                              <input type="number" id="prop-price" placeholder="15000" required>
-                          </div>
-
-                          <div class="input-group" style="margin-bottom: 0;">
-                              <label>Category</label>
-                              <select id="prop-type" required style="width: 100%; height: 42px; border-radius: 8px; border: 1px solid var(--border); padding: 0 0.5rem;">
-                                  <option value="Boys">Boys Only</option>
-                                  <option value="Girls">Girls Only</option>
-                                  <option value="Mixed">Mixed</option>
-                              </select>
-                          </div>
-
-                          <div class="input-group" style="margin-bottom: 0;">
-                              <label>Owner Phone</label>
-                              <input type="text" id="prop-phone" placeholder="+94771234567" required>
-                          </div>
-
-                          <div class="input-group" style="margin-bottom: 0;">
-                              <label>Location Description</label>
-                              <input type="text" id="prop-location" placeholder="e.g. 500m to Faculty of Geomatics" required>
-                          </div>
-
-                          <div class="input-group" style="grid-column: span 2; margin-bottom: 0;">
-                              <label>Amenities (comma-separated)</label>
-                              <input type="text" id="prop-features" placeholder="Wifi, Kitchen, attached Bathroom, Parking">
-                          </div>
-
-                          <div class="input-group" style="grid-column: span 2; margin-bottom: 0;">
-                              <label>Property Description <span style="font-weight:400; color:var(--text-muted); font-size:0.8rem;">(optional)</span></label>
-                              <textarea id="prop-description" rows="2" placeholder="Describe what makes your place special..." style="resize:vertical; min-height:60px; width: 100%; border-radius: 8px; border: 1px solid var(--border); padding: 0.5rem; font-family: inherit; box-sizing: border-box;"></textarea>
-                          </div>
-
-                          <div class="input-group" style="grid-column: span 2; margin-bottom: 0;">
-                              <label>Upload Property Photo</label>
-                              <div style="border: 1px dashed var(--border); padding: 0.75rem; border-radius: var(--radius-md); text-align: center; background: var(--bg); display: flex; align-items: center; justify-content: center; gap: 10px;">
-                                  <input type="file" id="prop-media" accept="image/*" style="cursor: pointer; font-size: 0.8rem;" />
-                                  <span class="text-muted" style="font-size: 0.75rem;">Select Photo</span>
+                      <!-- Step 1: Basic Information -->
+                      <div class="form-section-card" style="background: var(--bg-soft); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 1.5rem;">
+                          <h3 style="font-size: 1rem; color: var(--primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+                              1. Basic Information
+                          </h3>
+                          <div class="form-grid-2">
+                              <div class="input-group" style="grid-column: span 2; margin-bottom: 0;">
+                                  <label>Property Title</label>
+                                  <input type="text" id="prop-title" placeholder="e.g. Modern Studio near SUSL" required>
+                              </div>
+                              <div class="input-group" style="margin-bottom: 0;">
+                                  <label>Monthly Rent (LKR)</label>
+                                  <input type="number" id="prop-price" placeholder="15000" required>
+                              </div>
+                              <div class="input-group" style="margin-bottom: 0;">
+                                  <label>Category</label>
+                                  <select id="prop-type" required style="width: 100%; height: 42px; border-radius: 8px; border: 1px solid var(--border); padding: 0 0.5rem;">
+                                      <option value="Boys">Boys Only</option>
+                                      <option value="Girls">Girls Only</option>
+                                      <option value="Mixed">Mixed</option>
+                                  </select>
                               </div>
                           </div>
                       </div>
 
-                      <!-- Google Maps Link Paste Section -->
-                      <div class="input-group" style="margin-bottom:1.25rem;">
-                          <label style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
-                              <span style="font-size:0.875rem; font-weight:600; color:var(--secondary);">Property Location (Google Maps)</span>
-                              <a href="https://maps.google.com" target="_blank" rel="noopener" style="font-size:0.75rem; color:var(--primary); text-decoration:none; font-weight:500;">Open Google Maps</a>
-                          </label>
-
-                          <details style="background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-md); padding:0.5rem 0.75rem; margin-bottom:0.5rem;">
-                              <summary style="font-size:0.75rem; font-weight:700; color:var(--secondary); cursor: pointer; user-select: none;">How to get your link (Click to view)</summary>
-                              <ol style="font-size:0.75rem; color:var(--text-muted); padding-left:1.2rem; margin-top:0.3rem; line-height:1.5;">
-                                  <li>Open <strong>Google Maps</strong>.</li>
-                                  <li>Search or navigate to your boarding place.</li>
-                                  <li>Copy the URL link (PC: right-click and Copy, Mobile: Share -> Copy link).</li>
-                                  <li>Paste the copied link in the box below. Make sure it contains coordinate numbers like "@6.714,80.787".</li>
-                              </ol>
-                          </details>
-
-                          <div style="position:relative;">
-                              <input type="url" id="map_link_input" placeholder="Paste your Google Maps link here…" style="padding-right:2.5rem; width: 100%; box-sizing: border-box;">
-                              <span id="map_link_icon" style="position:absolute;right:0.8rem;top:50%;transform:translateY(-50%);font-size:1.1rem;pointer-events:none;"></span>
-                          </div>
-
-                          <div id="map_link_status" style="margin-top:0.5rem; font-size:0.8rem; display:none; padding:0.5rem 0.75rem; border-radius:var(--radius-sm);"></div>
-
-                          <div id="faculty_distances_preview" style="margin-top:0.75rem; display:none; padding:0.75rem; border-radius:var(--radius-md); background:var(--bg); border:1px solid var(--border);">
-                              <h4 style="font-size:0.8rem; font-weight:700; color:var(--secondary); margin-bottom:0.5rem; display:flex; align-items:center; gap:6px;">
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color: var(--primary);"><path d="M22 10v6M2 10v6M12 2L2 7l10 5 10-5-10-5z"></path><path d="M6 12v5c0 2 2.5 3 6 3s6-1 6-3v-5"></path></svg>
-                              Calculated Faculty Distances:
-                              </h4>
-                              <div id="faculty_distances_list" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap:0.4rem; font-size:0.72rem; color:var(--text);">
-                                  <!-- Filled by JS -->
+                      <!-- Step 2: Location & Contact -->
+                      <div class="form-section-card" style="background: var(--bg-soft); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 1.5rem;">
+                          <h3 style="font-size: 1rem; color: var(--primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                              2. Location & Contact
+                          </h3>
+                          <div class="form-grid-2">
+                              <div class="input-group" style="margin-bottom: 0;">
+                                  <label>Owner Phone</label>
+                                  <input type="text" id="prop-phone" placeholder="+94771234567" required>
+                              </div>
+                              <div class="input-group" style="margin-bottom: 0;">
+                                  <label>Location Description</label>
+                                  <input type="text" id="prop-location" placeholder="e.g. 500m to Faculty of Geomatics" required>
                               </div>
                           </div>
+                          
+                          <!-- Google Maps Link Paste Section -->
+                          <div class="input-group" style="margin-top: 1rem; margin-bottom: 0;">
+                              <label style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                                  <span style="font-size:0.875rem; font-weight:600; color:var(--secondary);">Property Location (Google Maps)</span>
+                                  <a href="https://maps.google.com" target="_blank" rel="noopener" style="font-size:0.75rem; color:var(--primary); text-decoration:none; font-weight:500;">Open Google Maps</a>
+                              </label>
 
-                          <input type="hidden" id="lat_input">
-                          <input type="hidden" id="lng_input">
+                              <details style="background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-md); padding:0.5rem 0.75rem; margin-bottom:0.5rem;">
+                                  <summary style="font-size:0.75rem; font-weight:700; color:var(--secondary); cursor: pointer; user-select: none;">How to get your link (Click to view)</summary>
+                                  <ol style="font-size:0.75rem; color:var(--text-muted); padding-left:1.2rem; margin-top:0.3rem; line-height:1.5;">
+                                      <li>Open <strong>Google Maps</strong>.</li>
+                                      <li>Search or navigate to your boarding place.</li>
+                                      <li>Copy the URL link (PC: right-click and Copy, Mobile: Share -> Copy link).</li>
+                                      <li>Paste the copied link in the box below. Make sure it contains coordinate numbers like "@6.714,80.787".</li>
+                                  </ol>
+                              </details>
+
+                              <div style="position:relative;">
+                                  <input type="url" id="map_link_input" placeholder="Paste your Google Maps link here…" style="padding-right:2.5rem; width: 100%; box-sizing: border-box;">
+                                  <span id="map_link_icon" style="position:absolute;right:0.8rem;top:50%;transform:translateY(-50%);font-size:1.1rem;pointer-events:none;"></span>
+                              </div>
+
+                              <div id="map_link_status" style="margin-top:0.5rem; font-size:0.8rem; display:none; padding:0.5rem 0.75rem; border-radius:var(--radius-sm);"></div>
+
+                              <div id="faculty_distances_preview" style="margin-top:0.75rem; display:none; padding:0.75rem; border-radius:var(--radius-md); background:var(--bg); border:1px solid var(--border);">
+                                  <h4 style="font-size:0.8rem; font-weight:700; color:var(--secondary); margin-bottom:0.5rem; display:flex; align-items:center; gap:6px;">
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color: var(--primary);"><path d="M22 10v6M2 10v6M12 2L2 7l10 5 10-5-10-5z"></path><path d="M6 12v5c0 2 2.5 3 6 3s6-1 6-3v-5"></path></svg>
+                                  Calculated Faculty Distances:
+                                  </h4>
+                                  <div id="faculty_distances_list" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap:0.4rem; font-size:0.72rem; color:var(--text);">
+                                      <!-- Filled by JS -->
+                                  </div>
+                              </div>
+
+                              <input type="hidden" id="lat_input">
+                              <input type="hidden" id="lng_input">
+                          </div>
+                      </div>
+
+                      <!-- Step 3: Features & Media -->
+                      <div class="form-section-card" style="background: var(--bg-soft); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 1.5rem;">
+                          <h3 style="font-size: 1rem; color: var(--primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                              3. Features & Media
+                          </h3>
+                          <div class="form-grid-2">
+                              <div class="input-group" style="grid-column: span 2; margin-bottom: 0;">
+                                  <label>Amenities (comma-separated)</label>
+                                  <input type="text" id="prop-features" placeholder="Wifi, Kitchen, attached Bathroom, Parking">
+                              </div>
+                              <div class="input-group" style="grid-column: span 2; margin-bottom: 0;">
+                                  <label>Property Description <span style="font-weight:400; color:var(--text-muted); font-size:0.8rem;">(optional)</span></label>
+                                  <textarea id="prop-description" rows="2" placeholder="Describe what makes your place special..." style="resize:vertical; min-height:60px; width: 100%; border-radius: 8px; border: 1px solid var(--border); padding: 0.5rem; font-family: inherit; box-sizing: border-box;"></textarea>
+                              </div>
+                              <div class="input-group" style="grid-column: span 2; margin-bottom: 0;">
+                                  <label>Upload Property Photo</label>
+                                  <div style="border: 1px dashed var(--border); padding: 0.75rem; border-radius: var(--radius-md); text-align: center; background: var(--bg); display: flex; align-items: center; justify-content: center; gap: 10px;">
+                                      <input type="file" id="prop-media" accept="image/*" style="cursor: pointer; font-size: 0.8rem;" />
+                                      <span class="text-muted" style="font-size: 0.75rem;">Select Photo</span>
+                                  </div>
+                              </div>
+                          </div>
                       </div>
 
                       <button type="submit" class="btn btn-primary btn-full" style="height: 56px; font-size: 1.1rem;">+ Publish Property</button>
