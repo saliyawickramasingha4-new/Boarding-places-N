@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Dashboard | StayNest</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app-frame">
+
+  <main class="main-wrapper">
+    <div class="page-header" style="background: white; border-bottom: 1px solid var(--border); padding: 0.75rem 0; margin-bottom: 0.5rem;">
+      <div style="max-width: var(--container-max); margin: 0 auto; padding: 0 1rem; font-weight: 700; color: var(--secondary); font-family: 'Plus Jakarta Sans'; font-size: 1.1rem;">
+        Student Dashboard
+      </div>
+    </div>
+    <div class="content-body">
+      
+      <div class="mb-5">
+          <h1 style="font-size: 2rem; margin-bottom: 0.5rem;" id="student-welcome">Hello!</h1>
+          <p class="text-muted">Here are the boarding places you've saved for later.</p>
+      </div>
+
+      <h2 style="font-size: 1.5rem; margin-bottom: 1.5rem; font-weight: 800;">My Saved Places</h2>
+
+      <div id="favorites-container">
+        <!-- Loaded dynamically -->
+        <p style="color: var(--text-muted);">Loading your saved stays...</p>
+      </div>
+
+    </div>
+  </main>
+
+  <div id="toast-container" class="toast-container"></div>
+</div>
+
+<script type="module" src="js/firebase-config.js"></script>
+<script type="module" src="js/navbar.js"></script>
+<script type="module">
+  import { auth, db, ref, get, remove } from "./js/firebase-config.js";
+
+  let currentUser = null;
+  let savedPlaces = [];
+
+  auth.onAuthStateChanged(async (user) => {
+    if (!user) {
+      window.location.href = "auth.html";
+      return;
+    }
+    currentUser = user;
+
+    const userDoc = await get(ref(db, "users/" + user.uid));
+    if (userDoc.exists()) {
+      const userData = userDoc.val();
+      document.getElementById("student-welcome").textContent = `Hello, ${userData.full_name.split(" ")[0]}!`;
+    }
+
+    loadSavedPlaces();
+  });
+
+  async function loadSavedPlaces() {
+    const container = document.getElementById("favorites-container");
+    try {
+      // 1. Fetch user favorites from RTDB
+      const favsSnap = await get(ref(db, "favorites"));
+      const listingIds = [];
+      if (favsSnap.exists()) {
+        Object.values(favsSnap.val()).forEach(fav => {
+          if (fav.user_id === currentUser.uid) listingIds.push(fav.listing_id);
+        });
+      }
+
+      if (listingIds.length === 0) {
+        renderEmptyState();
+        return;
+      }
+
+      // 2. Fetch listing details for each favorite
+      savedPlaces = [];
+      const listingsSnap = await get(ref(db, "listings"));
+      if (listingsSnap.exists()) {
+        Object.entries(listingsSnap.val()).forEach(([id, data]) => {
+          if (listingIds.includes(id)) {
+            savedPlaces.push({ id, ...data });
+          }
+        });
+      }
+
+      renderFavoritesGrid();
+    } catch(err) {
+      console.error(err);
+      container.innerHTML = `<p style="color: var(--error);">Error loading saved places.</p>`;
+    }
+  }
+
+  function renderFavoritesGrid() {
+    const container = document.getElementById("favorites-container");
+    container.innerHTML = "";
+
+    const grid = document.createElement("div");
+    grid.className = "listings-grid";
+
+    savedPlaces.forEach(l => {
+      const card = document.createElement("div");
+      card.className = `listing-card card ${l.is_rented ? 'rented-out' : ''}`;
+      card.id = `card-${l.id}`;
+      card.innerHTML = `
+        <div class="card-image" style="background-image: url('${l.image_url || 'images/default_boarding.jpg'}'); background-size: cover; background-position: center; min-height: 200px; position: relative;">
+          ${l.is_rented ? `
+            <div style="position: absolute; inset: 0; background: rgba(15, 23, 42, 0.55); backdrop-filter: blur(2.5px); display: flex; align-items: center; justify-content: center; z-index: 2; border-radius: inherit;">
+                <span style="background: #ef4444; color: white; font-weight: 700; font-size: 0.8rem; padding: 6px 16px; border-radius: 100px; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">Rented Out</span>
+            </div>
+          ` : ''}
+          <div style="position: absolute; top: 1rem; left: 1rem; display: flex; flex-direction: column; gap: 0.5rem; z-index: 3;">
+              <span class="badge badge-primary">${l.type}</span>
+          </div>
+          <button class="fav-btn active" data-id="${l.id}" title="Remove from favorites" style="position: absolute; top: 1rem; right: 1rem; width: 36px; height: 36px; border-radius: 50%; background: white; border: none; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer; color: var(--primary); z-index: 3;">
+              <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+          </button>
+          <div style="position: absolute; bottom: 1rem; right: 1rem; z-index: 3;">
+              <span class="badge" style="background: white; color: var(--secondary); box-shadow: var(--shadow-sm); font-weight: 700;">LKR ${Number(l.price).toLocaleString()}/mo</span>
+          </div>
+        </div>
+        <div class="card-body">
+            <h3 class="mb-1">${l.title}</h3>
+            <p class="text-muted" style="font-size: 0.875rem; display: flex; align-items: center; gap: 4px; margin-bottom: 1rem;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                ${l.location}
+            </p>
+            <div class="flex items-center justify-between card-footer-flex" style="border-top: 1px solid var(--border-light); padding-top: 1rem; margin-top: auto;">
+                <div class="flex items-center gap-2 rating-box">
+                    <span style="color: #fbbf24; font-size: 1.25rem;">★</span>
+                    <span style="font-weight: 700;">${l.rating || 4.5}</span>
+                </div>
+                <a href="listing_detail.html?id=${l.id}" class="btn btn-primary">Details</a>
+            </div>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+    container.appendChild(grid);
+
+    // Bind Favorite Toggling
+    document.querySelectorAll(".fav-btn").forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        const id = btn.dataset.id;
+        try {
+          const favId = `${currentUser.uid}_${id}`.replace(/[.#$\[\]]/g, '_');
+          await remove(ref(db, "favorites/" + favId));
+          showToast("Removed from saved places", "info");
+
+          // Animate and remove card from DOM
+          const card = document.getElementById(`card-${id}`);
+          if (card) {
+            card.style.transition = 'all 0.3s ease';
+            card.style.transform = 'scale(0.8)';
+            card.style.opacity = '0';
+            setTimeout(() => {
+              card.remove();
+              // Check if list empty now
+              savedPlaces = savedPlaces.filter(item => item.id !== id);
+              if (savedPlaces.length === 0) {
+                renderEmptyState();
+              }
+            }, 300);
+          }
+        } catch(err) {
+          console.error(err);
+          showToast("Failed to remove favorite", "error");
+        }
+      });
+    });
+  }
+
+  function renderEmptyState() {
+    const container = document.getElementById("favorites-container");
+    container.innerHTML = `
+      <div class="text-center" style="padding: 5rem 0; background: white; border-radius: var(--radius-lg); border: 1px solid var(--border);">
+          <div style="margin-bottom: 1.5rem; opacity: 0.3;">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+          </div>
+          <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">No saved places yet</h2>
+          <p class="text-muted mb-4">Start exploring and save the ones you like!</p>
+          <a href="search.html" class="btn btn-primary">Browse Boarding Places</a>
+      </div>
+    `;
+  }
+</script>
+<script src="js/script.js"></script>
+</body>
+</html>

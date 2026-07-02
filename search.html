@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Explore Properties | StayNest</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* ── Filter Panel ── */
+    .filter-panel {
+        background: #ffffff;
+        border-radius: 16px;
+        border: 1px solid var(--border, #e2e8f0);
+        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+    }
+    .filter-panel-header {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.85rem 1.5rem;
+        border-bottom: 1px solid var(--border, #e2e8f0);
+        background: #fafafa;
+    }
+    .filter-panel-header svg { color: var(--primary); flex-shrink: 0; }
+    .filter-panel-header .fph-title {
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-muted);
+    }
+    .filter-panel-body {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1.2fr 1.1fr auto;
+        align-items: stretch;
+    }
+    .filter-group {
+        padding: 0.9rem 1.2rem;
+        border-right: 1px solid var(--border, #e2e8f0);
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .filter-group:last-child { border-right: none; }
+    .fg-label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-muted);
+    }
+    /* Chips */
+    .f-chip-row { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+    .f-chip {
+        padding: 0.28rem 0.7rem;
+        border-radius: 100px;
+        font-size: 0.76rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1.5px solid #e2e8f0;
+        background: #f8fafc;
+        color: var(--text-muted);
+        transition: all 0.18s ease;
+        user-select: none;
+        white-space: nowrap;
+    }
+    .f-chip.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+        box-shadow: 0 3px 10px rgba(79,70,229,0.25);
+    }
+    .f-chip:hover:not(.active) {
+        border-color: #c7d2fe;
+        background: #eef2ff;
+        color: var(--primary);
+    }
+    /* Price inputs */
+    .price-row {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+    .price-input-wrapper {
+        display: flex;
+        align-items: center;
+        background: #f8fafc;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 0.3rem 0.5rem;
+        flex: 1;
+        min-width: 0;
+        transition: all 0.18s ease;
+    }
+    .price-input-wrapper:focus-within {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+        background: #fff;
+    }
+    .price-input-wrapper .p-prefix {
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: #94a3b8;
+        margin-right: 3px;
+        flex-shrink: 0;
+    }
+    .price-input-wrapper input {
+        border: none;
+        background: transparent;
+        width: 100%;
+        outline: none;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--secondary);
+        text-align: right;
+    }
+    .price-sep { color: #cbd5e1; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
+    /* Distance slider */
+    .dist-val {
+        font-size: 0.88rem;
+        font-weight: 800;
+        color: var(--primary);
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    input[type=range].modern-slider {
+        -webkit-appearance: none;
+        width: 100%;
+        background: transparent;
+        height: 5px;
+        border-radius: 3px;
+        outline: none;
+        cursor: pointer;
+    }
+    input[type=range].modern-slider::-webkit-slider-runnable-track {
+        height: 5px;
+        background: #e2e8f0;
+        border-radius: 3px;
+    }
+    input[type=range].modern-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 18px;
+        width: 18px;
+        border-radius: 50%;
+        background: var(--primary);
+        cursor: pointer;
+        margin-top: -6.5px;
+        box-shadow: 0 2px 8px rgba(79,70,229,0.35);
+        border: 2px solid white;
+        transition: transform 0.15s, box-shadow 0.15s;
+    }
+    input[type=range].modern-slider::-webkit-slider-thumb:hover {
+        transform: scale(1.18);
+        box-shadow: 0 4px 14px rgba(79,70,229,0.45);
+    }
+    /* Action buttons */
+    .filter-actions {
+        padding: 0.9rem 1.2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+        justify-content: center;
+    }
+    .btn-apply {
+        padding: 0.5rem 1.1rem;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        cursor: pointer;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        transition: all 0.18s ease;
+        text-decoration: none;
+    }
+    .btn-apply:hover { background: #4338ca; box-shadow: 0 4px 12px rgba(79,70,229,0.3); transform: translateY(-1px); }
+    .btn-clear {
+        padding: 0.4rem 1.1rem;
+        background: transparent;
+        color: var(--text-muted);
+        border: 1.5px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-align: center;
+        text-decoration: none;
+        transition: all 0.18s ease;
+    }
+    .btn-clear:hover { border-color: #cbd5e1; background: #f8fafc; color: var(--secondary); }
+    
+    .btn-map-explore {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.65rem 1.5rem;
+      background: white;
+      border: 1.5px solid var(--border);
+      border-radius: 100px;
+      color: var(--secondary);
+      font-weight: 700;
+      font-size: 0.9rem;
+      text-decoration: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      transition: all 0.2s;
+    }
+    .btn-map-explore:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(99,102,241,0.15);
+    }
+    @media (max-width: 900px) {
+        .filter-panel-body { grid-template-columns: 1fr 1fr; }
+        .filter-group { border-right: none; border-bottom: 1px solid var(--border); }
+        .filter-actions { border-top: 1px solid var(--border); flex-direction: row; padding: 0.75rem 1.25rem; }
+    }
+    @media (max-width: 580px) {
+        .filter-panel-body { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-frame">
+
+  <main class="main-wrapper">
+    <div class="content-body">
+      
+      <section>
+        <!-- Hero heading -->
+        <div class="text-center mb-4" style="max-width:700px; margin:0 auto 2rem;">
+            <h1 style="font-size:2.4rem; margin-bottom:0.6rem;">Find Your <span class="gradient-text">Perfect Stay</span></h1>
+            <p class="text-muted mb-4">Verified boarding places near Sabaragamuwa University of Sri Lanka.</p>
+            <a href="explore_map.html" class="btn-map-explore">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"></path><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg>
+                View Area Price Map
+            </a>
+        </div>
+
+        <!-- ── PREMIUM FILTER PANEL ─────────────────────────────────────────────── -->
+        <form id="search-filter-form">
+          <div class="filter-panel">
+            <div class="filter-panel-header">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+              <span class="fph-title">Filter Listings</span>
+            </div>
+            <div class="filter-panel-body">
+              <!-- Group 1: Category -->
+              <div class="filter-group">
+                <span class="fg-label">Category</span>
+                <div class="f-chip-row">
+                  <div class="f-chip active" data-filter="type" data-val="All">All</div>
+                  <div class="f-chip" data-filter="type" data-val="Boys">Boys Only</div>
+                  <div class="f-chip" data-filter="type" data-val="Girls">Girls Only</div>
+                  <div class="f-chip" data-filter="type" data-val="Mixed">Mixed</div>
+                </div>
+              </div>
+
+              <!-- Group 2: Availability -->
+              <div class="filter-group">
+                <span class="fg-label">Availability</span>
+                <div class="f-chip-row">
+                  <div class="f-chip active" data-filter="status" data-val="all">All</div>
+                  <div class="f-chip" data-filter="status" data-val="available">Available</div>
+                  <div class="f-chip" data-filter="status" data-val="rented">Rented</div>
+                </div>
+              </div>
+
+              <!-- Group 3: Price -->
+              <div class="filter-group">
+                <span class="fg-label">Monthly Rent</span>
+                <div class="price-row">
+                  <div class="price-input-wrapper">
+                    <span class="p-prefix">Rs.</span>
+                    <input type="number" id="min_price" value="0" min="0" max="100000" step="1000">
+                  </div>
+                  <span class="price-sep">–</span>
+                  <div class="price-input-wrapper">
+                    <span class="p-prefix">Rs.</span>
+                    <input type="number" id="max_price" value="100000" min="0" max="100000" step="1000">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Group 4: Distance -->
+              <div class="filter-group">
+                <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                  <span class="fg-label">Distance <span style="text-transform:none; font-weight:500; font-size:0.62rem; color:#94a3b8; letter-spacing:normal;">(from SUSL)</span></span>
+                  <span id="km-label" class="dist-val">Any</span>
+                </div>
+                <input type="range" id="max_km_slider" class="modern-slider" min="0" max="20" step="0.5" value="0">
+              </div>
+
+              <!-- Group 5: Actions -->
+              <div class="filter-actions">
+                <button type="submit" class="btn-apply">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                  Apply
+                </button>
+                <button type="button" id="clear-btn" class="btn-clear">Clear</button>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <!-- ── RESULTS ────────────────────────────────────────────────────── -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <div id="results-count" style="font-size:0.85rem; color:var(--text-muted); font-weight:600;">
+                Loading properties...
+            </div>
+        </div>
+
+        <div class="listings-grid" id="listings-grid">
+          <!-- Dynamically populated -->
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+  <div id="toast-container" class="toast-container"></div>
+</div>
+
+<script type="module" src="js/firebase-config.js"></script>
+<script type="module" src="js/navbar.js"></script>
+<script type="module">
+  import { auth, db, ref, get, set, remove } from "./js/firebase-config.js";
+
+  let allListings = [];
+  let userFavorites = [];
+  let currentUser = null;
+  const suslCoords = [6.7146, 80.7872];
+
+  // Filters State
+  let filterType = "All";
+  let filterStatus = "all";
+
+  function haversine(lat1, lon1, lat2, lon2) {
+    const R = 6371; // km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  }
+
+  // Load User, Favorites and Listings
+  auth.onAuthStateChanged(async (user) => {
+    currentUser = user;
+    if (user) {
+      // Get role
+      const userSnap = await get(ref(db, "users/" + user.uid));
+      if (userSnap.exists()) {
+        currentUser.role = userSnap.val().role;
+      }
+      
+      // Load user favorites
+      try {
+        const favsSnap = await get(ref(db, "favorites"));
+        userFavorites = [];
+        if (favsSnap.exists()) {
+          Object.values(favsSnap.val()).forEach(fav => {
+            if (fav.user_id === user.uid) userFavorites.push(fav.listing_id);
+          });
+        }
+      } catch (e) {
+        console.error("Error loading favorites:", e);
+      }
+    }
+    loadListings();
+  });
+
+  async function loadListings() {
+    try {
+      const snap = await get(ref(db, "listings"));
+      allListings = [];
+      if (snap.exists()) {
+        Object.entries(snap.val()).forEach(([id, data]) => {
+          allListings.push({
+            id,
+            title: data.title || "",
+            location: data.location || "",
+            price: Number(data.price) || 0,
+            type: data.type || "Boys",
+            image_url: data.image_url || "",
+            lat: data.lat ? Number(data.lat) : null,
+            lng: data.lng ? Number(data.lng) : null,
+            description: data.description || "",
+            is_rented: !!data.is_rented,
+            rating: Number(data.rating) || 0
+          });
+        });
+      }
+
+      // Calculate distances
+      allListings.forEach(l => {
+        if (l.lat && l.lng) {
+          l.distance = haversine(suslCoords[0], suslCoords[1], l.lat, l.lng);
+        } else {
+          l.distance = null;
+        }
+      });
+
+      renderListings();
+    } catch (e) {
+      console.error(e);
+      document.getElementById("results-count").textContent = "Failed to load properties.";
+    }
+  }
+
+  function renderListings() {
+    const grid = document.getElementById("listings-grid");
+    const countLabel = document.getElementById("results-count");
+    grid.innerHTML = "";
+
+    const minPrice = Number(document.getElementById("min_price").value) || 0;
+    const maxPrice = Number(document.getElementById("max_price").value) || 100000;
+    const maxKm = parseFloat(document.getElementById("max_km_slider").value) || 0;
+
+    const filtered = allListings.filter(l => {
+      // Category type filter
+      if (filterType !== "All" && l.type !== filterType) return false;
+      // Availability filter
+      if (filterStatus === "available" && l.is_rented) return false;
+      if (filterStatus === "rented" && !l.is_rented) return false;
+      // Price range
+      if (l.price < minPrice || l.price > maxPrice) return false;
+      // Distance filter
+      if (maxKm > 0) {
+        if (l.distance === null || l.distance > maxKm) return false;
+      }
+      return true;
+    });
+
+    countLabel.textContent = `Showing ${filtered.length} boarding propert${filtered.length === 1 ? 'y' : 'ies'}`;
+
+    if (filtered.length === 0) {
+      grid.innerHTML = `
+        <div class="card text-center" style="grid-column: 1/-1; padding: 5rem 2rem; border: 2px dashed var(--border); width: 100%; box-sizing: border-box;">
+            <h2>No results match your filters</h2>
+            <p class="text-muted mb-4">Try adjusting the price range, distance, or category.</p>
+        </div>
+      `;
+      return;
+    }
+
+    filtered.forEach(l => {
+      const isFav = userFavorites.includes(l.id);
+      const isStudent = currentUser && currentUser.role === "student";
+
+      const card = document.createElement("div");
+      card.className = `listing-card card ${l.is_rented ? 'rented-out' : ''}`;
+      card.innerHTML = `
+        <div class="card-image" style="background-image: url('${l.image_url || 'images/default_boarding.jpg'}'); background-size: cover; background-position: center; min-height: 200px; position: relative;">
+          ${l.is_rented ? `
+            <div style="position: absolute; inset: 0; background: rgba(15, 23, 42, 0.55); backdrop-filter: blur(2.5px); display: flex; align-items: center; justify-content: center; z-index: 2; border-radius: inherit;">
+                <span style="background: #ef4444; color: white; font-weight: 700; font-size: 0.8rem; padding: 6px 16px; border-radius: 100px; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">Rented Out</span>
+            </div>
+          ` : ''}
+          <div style="position: absolute; top: 1rem; left: 1rem; display: flex; flex-direction: column; gap: 0.5rem; z-index: 3;">
+              <span class="badge badge-primary">${l.type}</span>
+          </div>
+          ${isStudent ? `
+              <button class="fav-btn ${isFav ? 'active' : ''}" data-id="${l.id}" style="position: absolute; top: 1rem; right: 1rem; width: 36px; height: 36px; border-radius: 50%; background: white; border: none; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer; color: ${isFav ? 'var(--primary)' : 'var(--text-muted)'}; z-index: 3;">
+                  <svg viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+              </button>
+          ` : ''}
+          <div style="position: absolute; bottom: 1rem; right: 1rem; z-index: 3;">
+              <span class="badge" style="background: white; color: var(--secondary); box-shadow: var(--shadow-sm); font-weight: 700;">LKR ${l.price.toLocaleString()}/mo</span>
+          </div>
+        </div>
+        <div class="card-body">
+            <h3>${l.title}</h3>
+            <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.5rem; font-weight: 600;">
+              Proximity: ${l.distance !== null ? `${l.distance.toFixed(1)} km to SUSL` : 'Location not mapped'}
+            </p>
+            ${l.description ? `
+              <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.75rem; line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+                  ${l.description}
+              </p>
+            ` : ''}
+            <div class="flex items-center justify-between card-footer-flex" style="border-top: 1px solid var(--border-light); padding-top: 1rem; margin-top: 0.5rem; gap: 8px; width: 100%;">
+                ${currentUser ? `
+                    <a href="listing_detail.html?id=${l.id}" class="btn btn-primary" style="flex: 2; text-align: center;">View Details</a>
+                    ${l.lat && l.lng ? `
+                      <a href="https://www.google.com/maps/dir/?api=1&destination=${l.lat},${l.lng}" target="_blank" class="btn btn-outline" style="flex: 1; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 0.5rem 0.75rem; font-size: 0.8rem; font-weight: 700; white-space: nowrap;">
+                        📍 Go
+                      </a>
+                    ` : ''}
+                ` : `
+                    <a href="auth.html" class="btn btn-outline" style="width: 100%; text-align: center;">Sign In to View</a>
+                `}
+            </div>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+
+    // Add favorites action listeners
+    document.querySelectorAll(".fav-btn").forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!currentUser) return;
+        const id = btn.dataset.id;
+        const index = userFavorites.indexOf(id);
+
+        if (index > -1) {
+          // Remove from favorites
+          userFavorites.splice(index, 1);
+          btn.style.color = "var(--text-muted)";
+          btn.querySelector("svg").setAttribute("fill", "none");
+          showToast("Removed from saved places", "info");
+          
+          // Remove from Realtime Database
+          try {
+            const favId = `${currentUser.uid}_${id}`.replace(/[.#$\[\]]/g, '_');
+            await remove(ref(db, "favorites/" + favId));
+          } catch(err) {
+            console.error(err);
+          }
+        } else {
+          // Add to favorites
+          userFavorites.push(id);
+          btn.style.color = "var(--primary)";
+          btn.querySelector("svg").setAttribute("fill", "currentColor");
+          showToast("Added to saved places");
+
+          // Save to Realtime Database
+          try {
+            const favId = `${currentUser.uid}_${id}`.replace(/[.#$\[\]]/g, '_');
+            await set(ref(db, "favorites/" + favId), {
+              user_id: currentUser.uid,
+              listing_id: id,
+              created_at: new Date().toISOString()
+            });
+          } catch(err) {
+            console.error(err);
+          }
+        }
+      });
+    });
+  }
+
+  // Throttle helper to prevent frame drops during slider drag
+  function throttle(func, limit) {
+    let inThrottle;
+    return function() {
+      const args = arguments;
+      const context = this;
+      if (!inThrottle) {
+        func.apply(context, args);
+        inThrottle = true;
+        setTimeout(() => inThrottle = false, limit);
+      }
+    }
+  }
+
+  const throttledRenderListings = throttle(renderListings, 35);
+
+  // Setup slider listeners
+  const slider = document.getElementById("max_km_slider");
+  const kmLabel = document.getElementById("km-label");
+  slider.addEventListener("input", (e) => {
+    const val = parseFloat(e.target.value);
+    kmLabel.textContent = val === 0 ? "Any" : `${val} km`;
+    throttledRenderListings(); // Real-time update
+  });
+
+  // Setup Price Input Real-time listeners
+  document.getElementById("min_price").addEventListener("input", () => throttledRenderListings());
+  document.getElementById("max_price").addEventListener("input", () => throttledRenderListings());
+
+  // Setup Chips selection
+  document.querySelectorAll(".f-chip").forEach(chip => {
+    chip.addEventListener("click", (e) => {
+      const filter = chip.dataset.filter;
+      const val = chip.dataset.val;
+
+      document.querySelectorAll(`.f-chip[data-filter="${filter}"]`).forEach(c => c.classList.remove("active"));
+      chip.classList.add("active");
+
+      if (filter === "type") filterType = val;
+      if (filter === "status") filterStatus = val;
+      
+      renderListings(); // Immediately update on chip clicks
+    });
+  });
+
+  // Handle filter form submission
+  document.getElementById("search-filter-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    renderListings();
+  });
+
+  document.getElementById("clear-btn").addEventListener("click", () => {
+    document.getElementById("min_price").value = 0;
+    document.getElementById("max_price").value = 100000;
+    document.getElementById("max_km_slider").value = 0;
+    kmLabel.textContent = "Any";
+
+    document.querySelectorAll(".f-chip").forEach(c => c.classList.remove("active"));
+    document.querySelectorAll('.f-chip[data-val="All"], .f-chip[data-val="all"]').forEach(c => c.classList.add("active"));
+    filterType = "All";
+    filterStatus = "all";
+
+    renderListings();
+  });
+</script>
+<script src="js/script.js"></script>
+</body>
+</html>

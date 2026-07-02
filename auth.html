@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign In / Register | StayNest</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .auth-page {
+      position: relative;
+      min-height: calc(100vh - 80px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+  </style>
+</head>
+<body>
+<div class="app-frame">
+
+  <main class="main-wrapper">
+    <div class="content-body">
+      
+      <div class="auth-page">
+        <a href="index.html" class="auth-back-btn" style="position: absolute; top: 2rem; left: 2rem; width: 42px; height: 42px; border-radius: 50%; background: #ffffff; border: 1px solid #eef2f4; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); color: #546e7a; z-index: 10000;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width: 18px; height: 18px;"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </a>
+        <div class="auth-card card">
+          <div class="auth-tabs">
+            <button id="tab-login" class="auth-tab active" style="background:none; border:none; font-family:inherit; cursor:pointer;">Login</button>
+            <button id="tab-register" class="auth-tab" style="background:none; border:none; font-family:inherit; cursor:pointer;">Register</button>
+          </div>
+
+          <div class="text-center mb-2">
+            <h2 id="auth-title" style="font-size: 1.35rem; margin-bottom: 0;">Sign In</h2>
+          </div>
+
+          <form id="auth-form" class="auth-form">
+            <!-- Full name is shown only in Register mode -->
+            <div class="input-group" id="group-fullname" style="display: none;">
+              <label>Full Name</label>
+              <div class="input-with-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <input type="text" id="full_name" placeholder="Kamal Perera"/>
+              </div>
+            </div>
+
+            <div class="input-group">
+              <label>Email Address</label>
+              <div class="input-with-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                <input type="email" id="email" placeholder="name@company.com" required/>
+              </div>
+            </div>
+
+            <div class="input-group">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                <label style="margin-bottom: 0;">Password</label>
+                <a href="forgot_password.html" id="forgot-link" style="font-size: 0.75rem; color: var(--primary); font-weight: 600; text-decoration: none;">Forgot password?</a>
+              </div>
+              <div class="input-with-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                <input type="password" id="password" placeholder="••••••••" required/>
+              </div>
+              <small id="password-hint" style="color: var(--text-muted); font-size: 0.72rem; display: none; margin-top: 0.25rem;">
+                Must be at least 8 characters and contain a special symbol (e.g. @, #, $, !, %).
+              </small>
+            </div>
+
+            <div id="group-remember" style="margin-bottom: 0.75rem; display: flex; align-items: center; gap: 8px;">
+              <input type="checkbox" id="remember" style="width: 14px; height: 14px; cursor: pointer;">
+              <label for="remember" style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted); margin: 0; cursor: pointer;">Remember me for 30 days</label>
+            </div>
+
+            <!-- Role select is shown only in Register mode -->
+            <div class="input-group" id="group-role" style="display: none;">
+              <label>Identify as</label>
+              <div class="role-toggle">
+                <label class="role-option">
+                  <input type="radio" name="role" value="student" checked/>
+                  <span>Student</span>
+                </label>
+                <label class="role-option">
+                  <input type="radio" name="role" value="owner"/>
+                  <span>Owner</span>
+                </label>
+              </div>
+            </div>
+
+            <button type="submit" id="submit-btn" class="btn btn-primary btn-full mt-2">
+              Sign In &gt;
+            </button>
+          </form>
+
+          <div class="auth-divider">
+            <span>Or continue with</span>
+          </div>
+
+          <div style="display: flex; justify-content: center; width: 100%;">
+            <button id="google-btn" class="btn-google-full" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 0.65rem; border-radius: var(--radius-md); border: 1.5px solid var(--border); background: white; font-weight: 700; font-size: 0.88rem; color: var(--secondary); cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.03);">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="color: #4285F4;"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.92 3.12-1.92 4.12-1.2 1.2-3.08 2.48-6.12 2.48-4.92 0-8.96-4-8.96-8.92 0-4.92 4.04-8.92 8.96-8.92 2.6 0 4.6 1.04 6 2.36l2.32-2.32c-1.96-1.84-4.52-3.24-8.32-3.24C4.88 0 0 4.88 0 10.88S4.88 21.76 10.88 21.76c3.24 0 5.68-1.08 7.6-3.08 2-2 2.64-4.8 2.64-7.16 0-.68-.04-1.32-.12-1.92h-8.52z"/></svg>
+              Continue with Google
+            </button>
+          </div>
+
+          <div class="text-center mt-3" style="font-size: 0.8rem; border-top: 1px solid var(--border); padding-top: 1rem; margin-top: 1rem;">
+            <span id="footer-text" class="text-muted">Don't have an account?</span> 
+            <button id="toggle-action-btn" style="color: var(--primary); background:none; border:none; font-weight: 600; cursor:pointer; font-family:inherit; padding:0;">Create account</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <div id="toast-container" class="toast-container"></div>
+</div>
+
+<script type="module" src="js/firebase-config.js"></script>
+<script type="module" src="js/navbar.js"></script>
+<script type="module">
+  import { auth, db, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, ref, set, get } from "./js/firebase-config.js";
+
+  let mode = "login"; // "login" | "register"
+
+  const tabLogin = document.getElementById("tab-login");
+  const tabRegister = document.getElementById("tab-register");
+  const authTitle = document.getElementById("auth-title");
+  const groupFullname = document.getElementById("group-fullname");
+  const groupRemember = document.getElementById("group-remember");
+  const groupRole = document.getElementById("group-role");
+  const forgotLink = document.getElementById("forgot-link");
+  const passwordHint = document.getElementById("password-hint");
+  const submitBtn = document.getElementById("submit-btn");
+  const footerText = document.getElementById("footer-text");
+  const toggleActionBtn = document.getElementById("toggle-action-btn");
+  const authForm = document.getElementById("auth-form");
+  const googleBtn = document.getElementById("google-btn");
+
+  // Check URL params for mode
+  const urlParams = new URLSearchParams(window.location.search);
+  const paramMode = urlParams.get("mode");
+  if (paramMode === "register") {
+    switchMode("register");
+  } else {
+    switchMode("login");
+  }
+
+  tabLogin.addEventListener("click", () => switchMode("login"));
+  tabRegister.addEventListener("click", () => switchMode("register"));
+  toggleActionBtn.addEventListener("click", () => switchMode(mode === "login" ? "register" : "login"));
+
+  function switchMode(newMode) {
+    mode = newMode;
+    if (mode === "login") {
+      tabLogin.classList.add("active");
+      tabRegister.classList.remove("active");
+      authTitle.innerText = "Sign In";
+      groupFullname.style.display = "none";
+      groupRemember.style.display = "flex";
+      groupRole.style.display = "none";
+      forgotLink.style.display = "inline-block";
+      passwordHint.style.display = "none";
+      submitBtn.innerText = "Sign In >";
+      footerText.innerText = "Don't have an account?";
+      toggleActionBtn.innerText = "Create account";
+      document.getElementById("full_name").removeAttribute("required");
+    } else {
+      tabLogin.classList.remove("active");
+      tabRegister.classList.add("active");
+      authTitle.innerText = "Create Account";
+      groupFullname.style.display = "block";
+      groupRemember.style.display = "none";
+      groupRole.style.display = "block";
+      forgotLink.style.display = "none";
+      passwordHint.style.display = "block";
+      submitBtn.innerText = "Create Account >";
+      footerText.innerText = "Already have an account?";
+      toggleActionBtn.innerText = "Sign In";
+      document.getElementById("full_name").setAttribute("required", "true");
+    }
+  }
+
+  // Handle Form Submission
+  authForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+
+    if (mode === "login") {
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        showToast("Signed in successfully!");
+        
+        // Fetch user role to redirect appropriately
+        const snap = await get(ref(db, "users/" + userCredential.user.uid));
+        if (snap.exists() && snap.val().role === "owner") {
+          window.location.href = "dashboard.html";
+        } else {
+          window.location.href = "index.html";
+        }
+      } catch (err) {
+        console.error(err);
+        showToast(getFriendlyErrorMessage(err.code), "error");
+      }
+    } else {
+      const fullName = document.getElementById("full_name").value.trim();
+      const role = document.querySelector('input[name="role"]:checked').value;
+
+      // Validate password pattern client-side
+      const passwordPattern = /^(?=.*[!@#$%^&*()_+\-=\[\]{}|;':",./<>?`~]).{8,}$/;
+      if (!passwordPattern.test(password)) {
+        showToast("Password must be at least 8 characters and contain a special symbol.", "error");
+        return;
+      }
+
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        
+        // Save user profile data to Realtime Database
+        await set(ref(db, "users/" + userCredential.user.uid), {
+          full_name: fullName,
+          email: email,
+          role: role,
+          created_at: new Date().toISOString()
+        });
+
+        // Store role in local storage for fallback check
+        localStorage.setItem("temp_role", role);
+
+        showToast("Account created successfully!");
+        setTimeout(() => {
+          window.location.href = (role === "owner") ? "dashboard.html" : "index.html";
+        }, 1000);
+      } catch (err) {
+        console.error(err);
+        showToast(getFriendlyErrorMessage(err.code), "error");
+      }
+    }
+  });
+
+  // Google Sign-In Support
+  googleBtn.addEventListener("click", async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // Check if user already exists in Realtime Database
+      const snap = await get(ref(db, "users/" + user.uid));
+      
+      let role = "student";
+      if (!snap.exists()) {
+        // First login — ask role
+        role = prompt("Are you a Student or an Owner? Type 'student' or 'owner':", "student") || "student";
+        if (role !== "owner") role = "student";
+
+        await set(ref(db, "users/" + user.uid), {
+          full_name: user.displayName || "Google User",
+          email: user.email,
+          role: role,
+          created_at: new Date().toISOString()
+        });
+      } else {
+        role = snap.val().role;
+      }
+
+      showToast("Signed in with Google!");
+      setTimeout(() => {
+        window.location.href = (role === "owner") ? "dashboard.html" : "index.html";
+      }, 1000);
+    } catch (err) {
+      console.error(err);
+      showToast(getFriendlyErrorMessage(err.code), "error");
+    }
+  });
+
+  function getFriendlyErrorMessage(code) {
+    switch (code) {
+      case "auth/invalid-credential":
+      case "auth/wrong-password":
+      case "auth/user-not-found":
+        return "Invalid email or password.";
+      case "auth/email-already-in-use":
+        return "This email is already registered.";
+      case "auth/weak-password":
+        return "Password is too weak.";
+      case "auth/invalid-email":
+        return "Invalid email address.";
+      default:
+        return "Authentication failed. Please try again.";
+    }
+  }
+</script>
+<script src="js/script.js"></script>
+</body>
+</html>

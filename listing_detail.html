@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Property Details | StayNest</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .ld-page { max-width: 1100px; margin: 0 auto; padding-bottom: 3rem; }
+    .ld-gallery {
+        position: relative;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-xl);
+    }
+    .ld-gallery-main {
+        width: 100%;
+        height: 420px;
+        display: flex;
+        gap: 6px;
+    }
+    .ld-gallery-hero {
+        flex: 2;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+        cursor: pointer;
+        transition: filter 0.3s ease;
+        min-width: 0;
+    }
+    .ld-gallery-hero:hover { filter: brightness(1.05); }
+    .ld-gallery-side {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        min-width: 0;
+    }
+    .ld-gallery-thumb {
+        flex: 1;
+        background-size: cover;
+        background-position: center;
+        cursor: pointer;
+        position: relative;
+        transition: filter 0.3s ease;
+    }
+    .ld-gallery-thumb:hover { filter: brightness(1.05); }
+    .ld-gallery-more {
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,0.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 800;
+        font-size: 1.1rem;
+        gap: 6px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    .ld-gallery-more:hover { background: rgba(0,0,0,0.55); }
+    .ld-top-badges {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        z-index: 3;
+        display: flex;
+        gap: 8px;
+    }
+    .ld-type-badge {
+        background: white;
+        color: var(--primary);
+        font-weight: 800;
+        font-size: 0.75rem;
+        padding: 6px 14px;
+        border-radius: 100px;
+        box-shadow: var(--shadow-md);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .ld-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1.5rem;
+        margin-top: 1.75rem;
+        flex-wrap: wrap;
+    }
+    .ld-header-info { flex: 1; min-width: 250px; }
+    .ld-header-info h1 {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--secondary);
+        line-height: 1.15;
+        margin-bottom: 0.4rem;
+    }
+    .ld-location-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        font-weight: 500;
+    }
+    .ld-price-box {
+        flex-shrink: 0;
+        text-align: right;
+    }
+    .ld-price-main {
+        font-size: 2rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--primary), #818cf8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        line-height: 1;
+    }
+    .ld-price-sub {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        font-weight: 600;
+        margin-top: 2px;
+    }
+    .ld-actions {
+        display: flex;
+        gap: 0.6rem;
+        margin-top: 1.25rem;
+        flex-wrap: wrap;
+    }
+    .ld-action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 100px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-decoration: none;
+        border: 1.5px solid transparent;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .ld-action-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .ld-action-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px -4px rgba(0,0,0,0.12); }
+    .ld-btn-call { background: #f5f3ff; color: #4f46e5; border-color: #e0e7ff; }
+    .ld-btn-call:hover { background: #4f46e5; color: white; }
+    .ld-btn-msg { background: #fff7ed; color: #ea580c; border-color: #ffedd5; }
+    .ld-btn-msg:hover { background: #ea580c; color: white; }
+    .ld-btn-dir { background: #f0fdf4; color: #16a34a; border-color: #dcfce7; }
+    .ld-btn-dir:hover { background: #16a34a; color: white; }
+    .ld-btn-manage { background: #fef3c7; color: #b45309; border-color: #fde68a; }
+    .ld-btn-manage:hover { background: #b45309; color: white; }
+    .ld-btn-fav {
+        background: white;
+        color: var(--text-muted);
+        border-color: var(--border);
+    }
+    .ld-btn-fav:hover, .ld-btn-fav.active { color: #ef4444; border-color: #fecaca; background: #fef2f2; }
+    .ld-main-grid {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr;
+        gap: 2rem;
+        margin-top: 2rem;
+        align-items: start;
+    }
+    .ld-gallery-col {
+        position: sticky;
+        top: 1.5rem;
+    }
+    .ld-content-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    .ld-card {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-sm);
+        transition: box-shadow 0.3s ease, transform 0.3s ease;
+    }
+    .ld-card:hover {
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-2px);
+    }
+    .ld-card-title {
+        font-size: 1rem;
+        font-weight: 800;
+        color: var(--secondary);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .ld-card-title .bar {
+        width: 4px;
+        height: 20px;
+        background: linear-gradient(180deg, var(--primary), #818cf8);
+        border-radius: 4px;
+        flex-shrink: 0;
+    }
+    .ld-card-title svg { color: var(--primary); flex-shrink: 0; }
+    .ld-amenities {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    .ld-amenity {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--bg);
+        border: 1px solid var(--border-light);
+        padding: 8px 14px;
+        border-radius: 10px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--secondary);
+        transition: all 0.2s ease;
+    }
+    .ld-amenity:hover {
+        background: var(--primary-light);
+        border-color: var(--primary);
+        color: var(--primary);
+        transform: scale(1.03);
+    }
+    .ld-amenity-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+    .ld-desc {
+        font-size: 0.95rem;
+        line-height: 1.8;
+        color: var(--text-muted);
+        white-space: pre-line;
+        word-break: break-word;
+    }
+    .ld-dist-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    .ld-dist-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 14px;
+        border-radius: 12px;
+        background: var(--bg);
+        border: 1px solid var(--border-light);
+        transition: all 0.25s ease;
+    }
+    .ld-dist-item:hover {
+        border-color: var(--primary);
+        background: var(--primary-light);
+        transform: translateX(4px);
+    }
+    .ld-dist-name {
+        font-weight: 600;
+        color: var(--secondary);
+        font-size: 0.82rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .ld-dist-name .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--primary);
+        flex-shrink: 0;
+    }
+    .ld-dist-val {
+        font-weight: 800;
+        color: var(--primary);
+        font-size: 0.9rem;
+        white-space: nowrap;
+    }
+    .ld-dist-val small {
+        font-size: 0.65rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        margin-left: 2px;
+    }
+    .ld-lightbox {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: rgba(0,0,0,0.92);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 1rem;
+        backdrop-filter: blur(4px);
+    }
+    .ld-lightbox.active { display: flex; }
+    .ld-lightbox-img {
+        max-width: 90vw;
+        max-height: 80vh;
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        object-fit: contain;
+    }
+    .ld-lightbox-close {
+        position: absolute;
+        top: 1.5rem;
+        right: 1.5rem;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.2);
+        color: white;
+        font-size: 1.4rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .ld-lightbox-close:hover { background: rgba(255,255,255,0.2); }
+    .ld-back {
+        margin-top: 2rem;
+        text-align: center;
+    }
+    @media (max-width: 900px) {
+        .ld-main-grid { grid-template-columns: 1fr; }
+        .ld-gallery-col { position: static; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-frame">
+
+  <!-- Lightbox Modal -->
+  <div class="ld-lightbox" id="ldLightbox">
+      <button class="ld-lightbox-close" id="closeLightboxBtn">✕</button>
+      <img class="ld-lightbox-img" id="ldLightboxImg" src="" alt="Gallery">
+  </div>
+
+  <main class="main-wrapper">
+    <div class="content-body">
+      
+      <div class="ld-page">
+        <div class="ld-main-grid">
+          
+          <!-- LEFT: GALLERY, TITLE, BUTTONS -->
+          <div class="ld-gallery-col">
+            <div class="ld-gallery">
+              <div class="ld-top-badges">
+                <span class="ld-type-badge" id="details-type">—</span>
+                <span class="ld-type-badge" id="details-rented" style="display: none; background: #ef4444; color: white; border: none; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">Rented Out</span>
+              </div>
+              <div class="ld-gallery-main">
+                <div class="ld-gallery-hero" id="details-hero" style="background-image: url('images/default_boarding.jpg');"></div>
+              </div>
+            </div>
+
+            <!-- Title & Price Block -->
+            <div class="ld-card" style="margin-top: 1rem;">
+              <div class="ld-header" style="margin-top: 0;">
+                <div class="ld-header-info">
+                  <h1 id="details-title">—</h1>
+                  <div class="ld-location-row">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    <span id="details-location">—</span>
+                  </div>
+                </div>
+                <div class="ld-price-box">
+                  <div class="ld-price-main" id="details-price">LKR —</div>
+                  <div class="ld-price-sub">per month</div>
+                </div>
+              </div>
+
+              <!-- Action buttons -->
+              <div class="ld-actions" style="margin-top: 1rem;" id="details-actions">
+                <!-- Dynamically filled -->
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: DETAILS & DISTANCE -->
+          <div class="ld-content-grid">
+            <!-- Amenities Card -->
+            <div class="ld-card" id="amenities-card" style="display: none;">
+              <div class="ld-card-title">
+                <span class="bar"></span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+                Amenities & Features
+              </div>
+              <div class="ld-amenities" id="details-amenities">
+                <!-- Dynamically filled -->
+              </div>
+            </div>
+
+            <!-- About Card -->
+            <div class="ld-card">
+              <div class="ld-card-title">
+                <span class="bar"></span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                About this Property
+              </div>
+              <div class="ld-desc" id="details-desc">—</div>
+            </div>
+
+            <!-- Proximity Card -->
+            <div class="ld-card">
+              <div class="ld-card-title">
+                <span class="bar"></span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 10v6M2 10v6M12 2L2 7l10 5 10-5-10-5z"></path><path d="M6 12v5c0 2 2.5 3 6 3s6-1 6-3v-5"></path></svg>
+                Distance to Faculties
+              </div>
+              <div class="ld-dist-grid" id="details-distance-list">
+                <!-- Dynamically filled -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="ld-back">
+          <a href="search.html" class="btn btn-outline" style="border-radius: 100px; padding: 0.65rem 2rem;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Back to Exploration
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <div id="toast-container" class="toast-container"></div>
+</div>
+
+<script type="module" src="js/firebase-config.js"></script>
+<script type="module" src="js/navbar.js"></script>
+<script type="module">
+  import { auth, db, ref, get } from "./js/firebase-config.js";
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const listingId = urlParams.get("id");
+  const suslCoords = [6.7146, 80.7872];
+
+  const faculties = [
+    { name: "Social Science", lat: 6.70868988, lng: 80.7912375 },
+    { name: "Management Studies", lat: 6.70887199, lng: 80.7901203 },
+    { name: "Geomatics", lat: 6.7099502, lng: 80.7903207 },
+    { name: "Applied Science", lat: 6.71132532, lng: 80.7915687 },
+    { name: "Technology", lat: 6.71011936, lng: 80.7930851 },
+    { name: "Computing", lat: 6.71546278, lng: 80.7903577 },
+    { name: "Agriculture", lat: 6.70566473, lng: 80.7880711 }
+  ];
+
+  function haversine(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c * 1.45; // Approximate actual walking distance
+  }
+
+  if (!listingId) {
+    window.location.href = "search.html";
+  }
+
+  // Load listing data
+  async function loadListingDetail() {
+    try {
+      const listingSnapshot = await get(ref(db, "listings/" + listingId));
+      if (!listingSnapshot.exists()) {
+        showToast("Property not found.", "error");
+        setTimeout(() => { window.location.href = "search.html"; }, 1500);
+        return;
+      }
+      const data = listingSnapshot.val();
+
+      // Set fields
+      document.title = `${data.title} | StayNest`;
+      document.getElementById("details-title").textContent = data.title;
+      document.getElementById("details-location").textContent = data.location;
+      document.getElementById("details-price").textContent = `LKR ${Number(data.price).toLocaleString()}`;
+      document.getElementById("details-type").textContent = data.type || "Boys";
+      document.getElementById("details-desc").textContent = data.description || "No description provided.";
+      if (data.is_rented) {
+        document.getElementById("details-rented").style.display = "inline-block";
+      }
+
+      if (data.image_url) {
+        const hero = document.getElementById("details-hero");
+        hero.style.backgroundImage = `url('${data.image_url}')`;
+        hero.addEventListener("click", () => {
+          document.getElementById("ldLightboxImg").src = data.image_url;
+          document.getElementById("ldLightbox").classList.add("active");
+        });
+      }
+
+      // Amenities
+      if (data.features) {
+        document.getElementById("amenities-card").style.display = "block";
+        const container = document.getElementById("details-amenities");
+        container.innerHTML = "";
+        const list = data.features.split(",");
+        list.forEach(feat => {
+          const item = document.createElement("span");
+          item.className = "ld-amenity";
+          item.innerHTML = `<span class="ld-amenity-icon">✦</span> ${feat.trim()}`;
+          container.appendChild(item);
+        });
+      }
+
+      // Distances
+      const distanceContainer = document.getElementById("details-distance-list");
+      distanceContainer.innerHTML = "";
+      if (data.lat && data.lng) {
+        faculties.forEach(fac => {
+          const d = haversine(Number(data.lat), Number(data.lng), fac.lat, fac.lng);
+          const item = document.createElement("div");
+          item.className = "ld-dist-item";
+          item.innerHTML = `
+            <span class="ld-dist-name"><span class="dot"></span>${fac.name}</span>
+            <span class="ld-dist-val">${d.toFixed(2)}<small>km</small></span>
+          `;
+          distanceContainer.appendChild(item);
+        });
+      } else {
+        distanceContainer.innerHTML = `
+          <div style="text-align: center; padding: 1.5rem; border: 2px dashed var(--border); border-radius: 12px; color: var(--text-muted); font-size: 0.82rem; width: 100%; box-sizing: border-box;">
+              Coordinates not available for distance calculation.
+          </div>
+        `;
+      }
+
+      // Actions Builder depending on current user identity
+      const actionsBox = document.getElementById("details-actions");
+      actionsBox.innerHTML = "";
+
+      // Phone Call Button
+      if (data.phone) {
+        actionsBox.innerHTML += `
+          <a href="tel:${data.phone}" class="ld-action-btn ld-btn-call">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+              <span class="act-label">Call Owner</span>
+          </a>
+        `;
+      }
+
+      // Map Directions
+      if (data.lat && data.lng) {
+        actionsBox.innerHTML += `
+          <a href="https://www.google.com/maps/dir/?api=1&destination=${data.lat},${data.lng}" target="_blank" class="ld-action-btn ld-btn-dir">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
+              <span class="act-label">Directions</span>
+          </a>
+        `;
+      }
+
+      // Messages or Manage Actions based on auth status
+      auth.onAuthStateChanged(async (user) => {
+        if (user) {
+          const userDoc = await get(ref(db, "users/" + user.uid));
+          const uRole = userDoc.exists() ? userDoc.val().role : "student";
+
+          if (user.uid === data.owner_id || uRole === "owner") {
+            // If they own the listing, allow Edit Listing
+            if (user.uid === data.owner_id) {
+              actionsBox.innerHTML += `
+                <a href="edit_listing.html?id=${listingId}" class="ld-action-btn ld-btn-manage">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    <span class="act-label">Edit Property</span>
+                </a>
+              `;
+            }
+          } else {
+            // Student viewer - allow Inquiry Message
+            actionsBox.innerHTML += `
+              <a href="messages.html?listingId=${listingId}&ownerId=${data.owner_id}" class="ld-action-btn ld-btn-msg">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                  <span class="act-label">Message Owner</span>
+              </a>
+            `;
+          }
+        }
+      });
+
+    } catch (e) {
+      console.error(e);
+      showToast("Error retrieving details.", "error");
+    }
+  }
+
+  document.getElementById("closeLightboxBtn").addEventListener("click", () => {
+    document.getElementById("ldLightbox").classList.remove("active");
+  });
+
+  loadListingDetail();
+</script>
+<script src="js/script.js"></script>
+</body>
+</html>

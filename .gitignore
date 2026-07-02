@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual Environments
+venv/
+env/
+.venv/
+
+# Flask / SQLite
+*.db
+*.sqlite3
+instance/
+
+# Environment variables
+.env
+.env.*
+
+# Upload files
+frontend/static/uploads/
+
+# IDE
+.vscode/
+.idea/
+*.code-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter Notebooks checkpoints
+.ipynb_checkpoints/
+
+# Vercel
+.vercel/

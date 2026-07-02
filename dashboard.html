@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Property Management | StayNest</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .tabs-nav {
+      display: flex;
+      gap: 1rem;
+      border-bottom: 2px solid var(--border-light);
+      margin-bottom: 1.5rem;
+    }
+    .tab-btn {
+      padding: 0.75rem 1.25rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      border: none;
+      background: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: inherit;
+      border-bottom: 3px solid transparent;
+    }
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+    .tab-pane {
+      display: none;
+    }
+    .tab-pane.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+<div class="app-frame">
+
+  <main class="main-wrapper">
+    <div class="page-header" style="background: white; border-bottom: 1px solid var(--border); padding: 0.75rem 0; margin-bottom: 0.5rem;">
+      <div style="max-width: var(--container-max); margin: 0 auto; padding: 0 1rem; font-weight: 700; color: var(--secondary); font-family: 'Plus Jakarta Sans'; font-size: 1.1rem;">
+        Property Management
+      </div>
+    </div>
+    <div class="content-body">
+      
+      <div class="mb-4">
+          <h1 style="font-size: 2rem; margin-bottom: 0.5rem;" id="welcome-message">Welcome back</h1>
+          <p class="text-muted">Manage your properties, bookings and performance all in one place.</p>
+      </div>
+
+      <!-- TABS NAVIGATION -->
+      <div class="tabs-nav">
+          <button class="tab-btn active" data-tab="listings-tab">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+              My Listings
+          </button>
+          <button class="tab-btn" data-tab="add-new-tab">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              Add New Property
+          </button>
+      </div>
+
+      <!-- TAB PANES -->
+      <div class="tab-content">
+          
+          <!-- MY PROPERTIES LIST -->
+          <div id="listings-tab" class="tab-pane active">
+              <div class="card" style="padding: 0;">
+                  <div style="padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-light);">
+                      <h2 style="font-size: 1.25rem;">Active Listings</h2>
+                  </div>
+                  <div style="overflow-x: auto;">
+                      <table class="pro-table">
+                          <thead>
+                              <tr>
+                                  <th style="width: auto;">Property Info</th>
+                                  <th style="width: 140px;">Category</th>
+                                  <th style="width: 150px;">Status</th>
+                                  <th style="text-align: right; width: 160px;">Actions</th>
+                              </tr>
+                          </thead>
+                          <tbody id="dashboard-listings-tbody">
+                              <tr>
+                                  <td colspan="4" class="text-center" style="padding: 4rem 0; color: var(--text-muted);">
+                                      Loading your properties...
+                                  </td>
+                              </tr>
+                          </tbody>
+                      </table>
+                  </div>
+              </div>
+          </div>
+
+          <!-- ADD PROPERTY FORM -->
+          <div id="add-new-tab" class="tab-pane">
+              <div class="card detail-body" style="max-width: 800px; margin: 0 auto;">
+                  <div class="mb-4">
+                      <h2 style="font-size: 1.5rem;">List a New Property</h2>
+                      <p class="text-muted">Fill in the essential details to reach thousands of students.</p>
+                  </div>
+                  
+                  <form id="add-property-form">
+                      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem;">
+                          <div class="input-group" style="grid-column: span 2; margin-bottom: 0;">
+                              <label>Property Title</label>
+                              <input type="text" id="prop-title" placeholder="e.g. Modern Studio near SUSL" required>
+                          </div>
+
+                          <div class="input-group" style="margin-bottom: 0;">
+                              <label>Monthly Rent (LKR)</label>
+                              <input type="number" id="prop-price" placeholder="15000" required>
+                          </div>
+
+                          <div class="input-group" style="margin-bottom: 0;">
+                              <label>Category</label>
+                              <select id="prop-type" required style="width: 100%; height: 42px; border-radius: 8px; border: 1px solid var(--border); padding: 0 0.5rem;">
+                                  <option value="Boys">Boys Only</option>
+                                  <option value="Girls">Girls Only</option>
+                                  <option value="Mixed">Mixed</option>
+                              </select>
+                          </div>
+
+                          <div class="input-group" style="margin-bottom: 0;">
+                              <label>Owner Phone</label>
+                              <input type="text" id="prop-phone" placeholder="+94771234567" required>
+                          </div>
+
+                          <div class="input-group" style="margin-bottom: 0;">
+                              <label>Location Description</label>
+                              <input type="text" id="prop-location" placeholder="e.g. 500m to Faculty of Geomatics" required>
+                          </div>
+
+                          <div class="input-group" style="grid-column: span 2; margin-bottom: 0;">
+                              <label>Amenities (comma-separated)</label>
+                              <input type="text" id="prop-features" placeholder="Wifi, Kitchen, attached Bathroom, Parking">
+                          </div>
+
+                          <div class="input-group" style="grid-column: span 2; margin-bottom: 0;">
+                              <label>Property Description <span style="font-weight:400; color:var(--text-muted); font-size:0.8rem;">(optional)</span></label>
+                              <textarea id="prop-description" rows="2" placeholder="Describe what makes your place special..." style="resize:vertical; min-height:60px; width: 100%; border-radius: 8px; border: 1px solid var(--border); padding: 0.5rem; font-family: inherit; box-sizing: border-box;"></textarea>
+                          </div>
+
+                          <div class="input-group" style="grid-column: span 2; margin-bottom: 0;">
+                              <label>Upload Property Photo</label>
+                              <div style="border: 1px dashed var(--border); padding: 0.75rem; border-radius: var(--radius-md); text-align: center; background: var(--bg); display: flex; align-items: center; justify-content: center; gap: 10px;">
+                                  <input type="file" id="prop-media" accept="image/*" style="cursor: pointer; font-size: 0.8rem;" />
+                                  <span class="text-muted" style="font-size: 0.75rem;">Select Photo</span>
+                              </div>
+                          </div>
+                      </div>
+
+                      <!-- Google Maps Link Paste Section -->
+                      <div class="input-group" style="margin-bottom:1.25rem;">
+                          <label style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                              <span style="font-size:0.875rem; font-weight:600; color:var(--secondary);">Property Location (Google Maps)</span>
+                              <a href="https://maps.google.com" target="_blank" rel="noopener" style="font-size:0.75rem; color:var(--primary); text-decoration:none; font-weight:500;">Open Google Maps</a>
+                          </label>
+
+                          <details style="background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-md); padding:0.5rem 0.75rem; margin-bottom:0.5rem;">
+                              <summary style="font-size:0.75rem; font-weight:700; color:var(--secondary); cursor: pointer; user-select: none;">How to get your link (Click to view)</summary>
+                              <ol style="font-size:0.75rem; color:var(--text-muted); padding-left:1.2rem; margin-top:0.3rem; line-height:1.5;">
+                                  <li>Open <strong>Google Maps</strong>.</li>
+                                  <li>Search or navigate to your boarding place.</li>
+                                  <li>Copy the URL link (PC: right-click and Copy, Mobile: Share -> Copy link).</li>
+                                  <li>Paste the copied link in the box below. Make sure it contains coordinate numbers like "@6.714,80.787".</li>
+                              </ol>
+                          </details>
+
+                          <div style="position:relative;">
+                              <input type="url" id="map_link_input" placeholder="Paste your Google Maps link here…" style="padding-right:2.5rem; width: 100%; box-sizing: border-box;">
+                              <span id="map_link_icon" style="position:absolute;right:0.8rem;top:50%;transform:translateY(-50%);font-size:1.1rem;pointer-events:none;"></span>
+                          </div>
+
+                          <div id="map_link_status" style="margin-top:0.5rem; font-size:0.8rem; display:none; padding:0.5rem 0.75rem; border-radius:var(--radius-sm);"></div>
+
+                          <div id="faculty_distances_preview" style="margin-top:0.75rem; display:none; padding:0.75rem; border-radius:var(--radius-md); background:var(--bg); border:1px solid var(--border);">
+                              <h4 style="font-size:0.8rem; font-weight:700; color:var(--secondary); margin-bottom:0.5rem; display:flex; align-items:center; gap:6px;">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color: var(--primary);"><path d="M22 10v6M2 10v6M12 2L2 7l10 5 10-5-10-5z"></path><path d="M6 12v5c0 2 2.5 3 6 3s6-1 6-3v-5"></path></svg>
+                              Calculated Faculty Distances:
+                              </h4>
+                              <div id="faculty_distances_list" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap:0.4rem; font-size:0.72rem; color:var(--text);">
+                                  <!-- Filled by JS -->
+                              </div>
+                          </div>
+
+                          <input type="hidden" id="lat_input">
+                          <input type="hidden" id="lng_input">
+                      </div>
+
+                      <button type="submit" class="btn btn-primary btn-full" style="height: 56px; font-size: 1.1rem;">+ Publish Property</button>
+                  </form>
+              </div>
+          </div>
+      </div>
+
+    </div>
+  </main>
+
+  <div id="toast-container" class="toast-container"></div>
+</div>
+
+<script type="module" src="js/firebase-config.js"></script>
+<script type="module" src="js/navbar.js"></script>
+<script type="module">
+  import { auth, db, ref, get, push, update, remove, set, onAuthStateChanged } from "./js/firebase-config.js";
+
+  let currentUser = null;
+  let ownerListings = [];
+
+  // Tab navigation
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById(btn.dataset.tab).classList.add("active");
+    });
+  });
+
+  // Verify and Load Dashboard
+  auth.onAuthStateChanged(async (user) => {
+    if (!user) {
+      window.location.href = "auth.html";
+      return;
+    }
+    currentUser = user;
+
+    const userSnap = await get(ref(db, "users/" + user.uid));
+    if (userSnap.exists()) {
+      const userData = userSnap.val();
+      if (userData.role !== "owner") {
+        window.location.href = "index.html";
+        return;
+      }
+      document.getElementById("welcome-message").textContent = `Welcome back, ${userData.full_name.split(" ")[0]}`;
+    }
+
+    loadOwnerProperties();
+  });
+
+  async function loadOwnerProperties() {
+    try {
+      const snap = await get(ref(db, "listings"));
+      ownerListings = [];
+      if (snap.exists()) {
+        const data = snap.val();
+        Object.entries(data).forEach(([id, listing]) => {
+          if (listing.owner_id === currentUser.uid) {
+            ownerListings.push({ id, ...listing });
+          }
+        });
+      }
+      renderPropertiesTable();
+    } catch(e) {
+      console.error(e);
+      showToast("Error loading your properties.", "error");
+    }
+  }
+
+  function renderPropertiesTable() {
+    const tbody = document.getElementById("dashboard-listings-tbody");
+    tbody.innerHTML = "";
+
+    if (ownerListings.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+            <td colspan="4" class="text-center" style="padding: 4rem 0; color: var(--text-muted);">
+                <div style="margin-bottom: 1rem; opacity: 0.5;">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                </div>
+                <p>You haven't listed any properties yet.</p>
+            </td>
+        </tr>
+      `;
+      return;
+    }
+
+    ownerListings.forEach(l => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td data-label="Property">
+          <div class="prop-cell" style="display: flex; align-items: center; gap: 12px;">
+            <img src="${l.image_url || 'images/default_boarding.jpg'}" class="prop-thumb" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;">
+            <div>
+              <div style="font-weight: 700; font-size: 0.95rem; color: var(--secondary);">${l.title}</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">LKR ${Number(l.price).toLocaleString()} / mo</div>
+            </div>
+          </div>
+        </td>
+        <td data-label="Category"><span class="badge badge-primary">${l.type}</span></td>
+        <td data-label="Status">
+          <span class="badge ${l.is_rented ? '' : 'badge-success'}" style="min-width: 110px; justify-content: center; background: ${l.is_rented ? '#64748b' : 'var(--success)'}; color: white;">
+            ${l.is_rented ? 'Rented Out' : 'Available'}
+          </span>
+        </td>
+        <td data-label="Actions" style="text-align: right;">
+          <div class="flex gap-2" style="justify-content: flex-end; display: flex; align-items: center;">
+            <button class="action-btn toggle-rent-btn ${l.is_rented ? 'rented' : ''}" data-id="${l.id}" title="${l.is_rented ? 'Mark Available' : 'Mark Rented'}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="${l.is_rented ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            </button>
+            <a href="edit_listing.html?id=${l.id}" class="action-btn" title="Edit">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            </a>
+            <button class="action-btn delete-btn delete" data-id="${l.id}" title="Delete">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // Toggle rented event listeners
+    document.querySelectorAll(".toggle-rent-btn").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        const currentListing = ownerListings.find(l => l.id === id);
+        if (!currentListing) return;
+
+        const nextRented = !currentListing.is_rented;
+        try {
+          await update(ref(db, "listings/" + id), {
+            is_rented: nextRented
+          });
+          showToast(nextRented ? "Property marked as Rented" : "Property marked as Available");
+          loadOwnerProperties();
+        } catch(err) {
+          console.error(err);
+          showToast("Failed to update status", "error");
+        }
+      });
+    });
+
+    // Delete listing event listeners
+    document.querySelectorAll(".delete-btn").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        if (!confirm("Permanently remove this property?")) return;
+        const id = btn.dataset.id;
+        try {
+          await remove(ref(db, "listings/" + id));
+          showToast("Property deleted successfully.");
+          loadOwnerProperties();
+        } catch(err) {
+          console.error(err);
+          showToast("Failed to delete property", "error");
+        }
+      });
+    });
+  }
+
+  // Parse Google Maps URLs for Coordinates
+  const mapInput = document.getElementById("map_link_input");
+  mapInput.addEventListener("input", (e) => {
+    const url = e.target.value.trim();
+    const statusEl = document.getElementById("map_link_status");
+    const iconEl = document.getElementById("map_link_icon");
+    const latInput = document.getElementById("lat_input");
+    const lngInput = document.getElementById("lng_input");
+
+    if (!url) {
+      statusEl.style.display = "none";
+      iconEl.textContent = "";
+      latInput.value = "";
+      lngInput.value = "";
+      updateFacultyDistances(null, null);
+      return;
+    }
+
+    let lat = null, lng = null, m;
+
+    m = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (m) { lat = parseFloat(m[1]); lng = parseFloat(m[2]); }
+
+    if (!lat) {
+      m = url.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
+      if (m) { lat = parseFloat(m[1]); lng = parseFloat(m[2]); }
+    }
+
+    if (!lat) {
+      m = url.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+      if (m) { lat = parseFloat(m[1]); lng = parseFloat(m[2]); }
+    }
+
+    if (lat !== null && lng !== null) {
+      latInput.value = lat.toFixed(7);
+      lngInput.value = lng.toFixed(7);
+      iconEl.textContent = '✓';
+      statusEl.style.display = 'block';
+      statusEl.style.background = '#f0fdf4';
+      statusEl.style.color = '#15803d';
+      statusEl.style.border = '1px solid #bbf7d0';
+      statusEl.innerHTML = `<strong>Coordinates extracted:</strong> ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+      updateFacultyDistances(lat, lng);
+    } else {
+      latInput.value = '';
+      lngInput.value = '';
+      iconEl.textContent = '✗';
+      statusEl.style.display = 'block';
+      statusEl.style.background = '#fef2f2';
+      statusEl.style.color = '#991b1b';
+      statusEl.style.border = '1px solid #fecaca';
+      if (url.includes("maps.app.goo.gl") || url.includes("goo.gl/maps")) {
+        statusEl.innerHTML = '<strong>Short Link Detected!</strong> maps.app.goo.gl links do not contain coordinates. Please open the link in your browser, copy the <strong>full URL from the browser address bar</strong> (containing `@latitude,longitude`), and paste it here.';
+      } else {
+        statusEl.innerHTML = '<strong>Could not resolve coordinates.</strong> Make sure to paste a full Google Maps URL containing coordinates (e.g. `@6.714,80.787`).';
+      }
+      updateFacultyDistances(null, null);
+    }
+  });
+
+  // Distances calculations
+  function updateFacultyDistances(lat, lng) {
+    const previewEl = document.getElementById('faculty_distances_preview');
+    const listEl = document.getElementById('faculty_distances_list');
+    if (!previewEl || !listEl) return;
+
+    if (!lat || !lng) {
+      previewEl.style.display = 'none';
+      listEl.innerHTML = '';
+      return;
+    }
+
+    const faculties = [
+      { name: "Social Science", lat: 6.70868988, lng: 80.7912375 },
+      { name: "Management Studies", lat: 6.70887199, lng: 80.7901203 },
+      { name: "Geomatics", lat: 6.70995020, lng: 80.7903207 },
+      { name: "Applied Science", lat: 6.71132532, lng: 80.7915687 },
+      { name: "Technology", lat: 6.71011936, lng: 80.7930851 },
+      { name: "Computing", lat: 6.71546278, lng: 80.7903577 },
+      { name: "Agriculture", lat: 6.70566473, lng: 80.7880711 }
+    ];
+
+    function haversine(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c * 1.45;
+    }
+
+    let html = '';
+    faculties.forEach(fac => {
+      const dist = haversine(lat, lng, fac.lat, fac.lng);
+      html += `
+        <div style="background:var(--bg-soft); border:1px solid var(--border); padding:0.6rem; border-radius:var(--radius-sm); display:flex; flex-direction:column; gap:2px; box-shadow:var(--shadow-sm);">
+            <span style="font-weight:700; color:var(--text-muted); font-size:0.7rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${fac.name}</span>
+            <span style="font-weight:800; color:var(--primary); font-size:0.85rem;">${dist.toFixed(2)} km</span>
+        </div>
+      `;
+    });
+
+    listEl.innerHTML = html;
+    previewEl.style.display = 'block';
+  }
+
+  // Handle new listing form submission
+  document.getElementById("add-property-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!currentUser) return;
+
+    const title = document.getElementById("prop-title").value.trim();
+    const price = Number(document.getElementById("prop-price").value) || 0;
+    const type = document.getElementById("prop-type").value;
+    const phone = document.getElementById("prop-phone").value.trim();
+    const location = document.getElementById("prop-location").value.trim();
+    const features = document.getElementById("prop-features").value.trim();
+    const description = document.getElementById("prop-description").value.trim();
+    const mapLink = document.getElementById("map_link_input").value.trim();
+    const lat = document.getElementById("lat_input").value ? Number(document.getElementById("lat_input").value) : null;
+    const lng = document.getElementById("lng_input").value ? Number(document.getElementById("lng_input").value) : null;
+
+    const mediaInput = document.getElementById("prop-media");
+    let imageUrl = "";
+
+    // Process image file to base64 with client-side canvas compression!
+    if (mediaInput.files && mediaInput.files[0]) {
+      try {
+        imageUrl = await compressAndConvertToBase64(mediaInput.files[0]);
+      } catch (err) {
+        console.error("Image processing error:", err);
+      }
+    }
+
+    try {
+      const newRef = push(ref(db, "listings"));
+      await set(newRef, {
+        title,
+        price,
+        type,
+        phone,
+        location,
+        features,
+        description,
+        map_link: mapLink,
+        lat,
+        lng,
+        image_url: imageUrl,
+        owner_id: currentUser.uid,
+        is_rented: false,
+        rating: 4.5,
+        created_at: new Date().toISOString()
+      });
+
+      showToast("Property published successfully!");
+      document.getElementById("add-property-form").reset();
+      document.getElementById("map_link_status").style.display = "none";
+      document.getElementById("faculty_distances_preview").style.display = "none";
+      
+      // Navigate back to listings tab
+      document.querySelector('.tab-btn[data-tab="listings-tab"]').click();
+      loadOwnerProperties();
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to publish property", "error");
+    }
+  });
+
+  // Client-side image compression to base64
+  function compressAndConvertToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const MAX_WIDTH = 600;
+          const scaleSize = MAX_WIDTH / img.width;
+          canvas.width = MAX_WIDTH;
+          canvas.height = img.height * scaleSize;
+
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+          // Compress to JPEG with 0.7 quality
+          const base64 = canvas.toDataURL("image/jpeg", 0.7);
+          resolve(base64);
+        };
+        img.onerror = (err) => reject(err);
+      };
+      reader.onerror = (err) => reject(err);
+    });
+  }
+</script>
+<script src="js/script.js"></script>
+</body>
+</html>

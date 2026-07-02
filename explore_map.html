@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Market Explorer | StayNest</title>
+  
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* ── Filter Card & Selection Chips ── */
+    .filter-card {
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 1.5rem 2rem;
+        margin-bottom: 2rem;
+        transition: all 0.3s ease;
+    }
+    .filter-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 0.6rem;
+        display: block;
+    }
+    .category-chip {
+        padding: 0.45rem 1rem;
+        border-radius: 100px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid #e2e8f0;
+        background: #ffffff;
+        color: var(--text-muted);
+        transition: all 0.2s ease;
+        user-select: none;
+    }
+    .category-chip.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+    }
+    .category-chip:hover:not(.active) {
+        border-color: #cbd5e1;
+        background: #f1f5f9;
+    }
+
+    /* ── Range Slider ── */
+    input[type=range].modern-slider {
+        -webkit-appearance: none;
+        width: 100%;
+        background: transparent;
+        height: 5px;
+        border-radius: 3px;
+        outline: none;
+        cursor: pointer;
+    }
+    input[type=range].modern-slider::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 5px;
+        background: #e2e8f0;
+        border-radius: 3px;
+    }
+    input[type=range].modern-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 18px;
+        width: 18px;
+        border-radius: 50%;
+        background: var(--primary);
+        cursor: pointer;
+        margin-top: -6.5px;
+        box-shadow: 0 2px 8px rgba(79, 70, 229, 0.35);
+        border: 2px solid white;
+        transition: transform 0.15s, box-shadow 0.15s;
+    }
+    input[type=range].modern-slider::-webkit-slider-thumb:hover {
+        transform: scale(1.2);
+        box-shadow: 0 4px 14px rgba(79, 70, 229, 0.45);
+    }
+
+    /* ── Filter Panel Redesign ── */
+    .filter-panel {
+      background: #ffffff;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+    }
+    .filter-panel-header {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.85rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      background: #fafafa;
+    }
+    .filter-panel-header svg { color: var(--primary); flex-shrink: 0; }
+    .filter-panel-header span {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+    .filter-panel-body {
+      display: grid;
+      grid-template-columns: 240px 250px 1fr auto;
+      gap: 0;
+      align-items: stretch;
+    }
+    .filter-group {
+      padding: 1rem 1.25rem;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+    .filter-group:last-child { border-right: none; }
+    .filter-group-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 0.1rem;
+    }
+    .chip-row { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+    .f-chip {
+      padding: 0.3rem 0.75rem;
+      border-radius: 100px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1.5px solid #e2e8f0;
+      background: #f8fafc;
+      color: var(--text-muted);
+      transition: all 0.18s ease;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .f-chip.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      box-shadow: 0 3px 10px rgba(79, 70, 229, 0.28);
+    }
+    .f-chip:hover:not(.active) {
+      border-color: #c7d2fe;
+      background: #eef2ff;
+      color: var(--primary);
+    }
+    .price-display {
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: var(--primary);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      letter-spacing: -0.01em;
+    }
+    .price-range-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.3rem;
+    }
+    .filter-actions {
+      padding: 1rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+      justify-content: center;
+    }
+    .btn-apply-filter {
+      padding: 0.5rem 1.1rem;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      white-space: nowrap;
+      letter-spacing: 0.01em;
+    }
+    .btn-apply-filter:hover { background: #4338ca; box-shadow: 0 4px 12px rgba(79,70,229,0.3); transform: translateY(-1px); }
+    .btn-reset-filter {
+      padding: 0.4rem 1.1rem;
+      background: transparent;
+      color: var(--text-muted);
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      white-space: nowrap;
+    }
+    .btn-reset-filter:hover { border-color: #cbd5e1; background: #f8fafc; color: var(--secondary); }
+    @media (max-width: 900px) {
+      .filter-panel-body { grid-template-columns: 1fr 1fr; }
+      .filter-group { border-right: none; border-bottom: 1px solid var(--border); }
+      .filter-actions { border-top: 1px solid var(--border); flex-direction: row; padding: 0.75rem 1.25rem; }
+    }
+    @media (max-width: 580px) {
+      .filter-panel-body { grid-template-columns: 1fr; }
+    }
+
+    /* ── Custom Price Markers on Map ── */
+    .custom-price-marker {
+      background: transparent !important;
+      border: none !important;
+    }
+    .map-price-badge {
+      background: white;
+      color: var(--secondary);
+      border: 2px solid var(--badge-color, var(--primary));
+      border-radius: 12px;
+      padding: 4px 8px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      white-space: nowrap;
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: pointer;
+      display: inline-block;
+    }
+    .map-price-badge:hover {
+      transform: translateY(-2px) scale(1.08);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.22);
+      background: var(--badge-color, var(--primary));
+      color: white !important;
+      }
+    .map-price-badge.rented {
+      background: #f1f5f9;
+      color: #94a3b8;
+      border-color: #cbd5e1;
+      text-decoration: line-through;
+      opacity: 0.85;
+    }
+
+    /* ── Top Section ── */
+    .top-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    /* ── Map Wrapper with Overlay Stats ── */
+    .map-wrapper {
+      position: relative;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 24px 60px -12px rgba(0,0,0,0.22);
+      margin-bottom: 2rem;
+      border: 1px solid var(--border);
+    }
+    .map-card {
+      overflow: hidden;
+      height: 480px;
+    }
+    #explore-map { height: 100%; width: 100%; z-index: 1; }
+    .map-overlay-bar {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: linear-gradient(to top, rgba(15,23,42,0.88) 0%, rgba(15,23,42,0.4) 70%, transparent 100%);
+      padding: 2rem 1.75rem 1.25rem;
+      display: flex;
+      gap: 2rem;
+      align-items: flex-end;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .map-stat {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .map-stat-val {
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: #ffffff;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+    .map-stat-lbl {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: rgba(148,163,184,0.9);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .map-stat-sep {
+      width: 1px;
+      height: 36px;
+      background: rgba(255,255,255,0.15);
+      align-self: flex-end;
+      margin-bottom: 4px;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar-panel {
+      background: var(--bg-soft);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-lg);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      overflow-y: auto;
+    }
+    .panel-title { font-size: 1.2rem; font-family:'Plus Jakarta Sans',sans-serif; color:var(--secondary); margin-bottom:0.15rem; }
+    .panel-sub   { font-size: 0.82rem; color: var(--text-muted); }
+
+    /* Stat Cards */
+    .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; width: 100%; }
+    .s-card {
+      background: var(--bg);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 1.2rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      transition: all 250ms var(--ease-spring);
+      cursor: default;
+    }
+    .s-card:hover { border-color: hsla(243,75%,59%,.35); transform: translateY(-3px); box-shadow: var(--shadow-md); }
+    .s-label { font-size: 0.65rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+    .s-icon  { color: var(--primary); display: flex; align-items: center; }
+    .s-val   { font-size: 1.15rem; font-weight: 800; color: var(--secondary); font-family:'Plus Jakarta Sans',sans-serif; }
+
+    /* Divider */
+    .sec-divider { height: 1px; background: var(--border); }
+
+    /* Chart Section */
+    .chart-block {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      background: var(--bg);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 1.25rem 1rem;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.015);
+      transition: all 250ms var(--ease-spring);
+    }
+    .chart-block:hover {
+      border-color: hsla(243, 75%, 59%, 0.25);
+      box-shadow: var(--shadow-md), inset 0 2px 4px rgba(0,0,0,0.015);
+    }
+    .chart-block h3 { font-size: 0.95rem; font-family:'Plus Jakarta Sans',sans-serif; color:var(--secondary); display:flex;align-items:center;gap:8px; }
+    .chart-block h3 .chip {
+      font-size: 0.68rem; font-weight: 700; background: var(--primary-light); color: var(--primary);
+      padding: 2px 8px; border-radius: 100px; font-family:'Inter',sans-serif;
+    }
+    .chart-wrap { position: relative; width: 100%; height: 220px; }
+
+    /* ── Bottom Deep-Analysis Grid ── */
+    .analysis-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .a-card-full {
+      grid-column: 1 / -1;
+    }
+    @media (max-width: 768px) {
+      .analysis-grid { grid-template-columns: 1fr; }
+      .a-card-full { grid-column: 1; }
+    }
+
+    .a-card {
+      background: var(--bg-soft);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      transition: box-shadow 250ms;
+    }
+    .a-card:hover { box-shadow: var(--shadow-md); }
+    .a-card-title {
+      font-size: 1rem;
+      font-family:'Plus Jakarta Sans',sans-serif;
+      color: var(--secondary);
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700;
+    }
+    .a-card-title span.icon {
+      width: 32px; height: 32px;
+      background: var(--primary-light);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--primary);
+      flex-shrink: 0;
+    }
+
+    /* Type breakdown rows */
+    .type-row { display: flex; flex-direction: column; gap: 0.6rem; }
+    .type-item { display: flex; align-items: center; gap: 0.75rem; }
+    .type-label { font-size: 0.8rem; font-weight: 600; color: var(--secondary); display: flex; align-items: center; gap: 6px; width: 75px; flex-shrink: 0; }
+    .type-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .type-bar-bg {
+      flex: 1; height: 8px; background: var(--border-light);
+      border-radius: 100px; overflow: hidden;
+    }
+    .type-bar-fill {
+      height: 100%; border-radius: 100px;
+      transition: width 1s var(--ease-spring);
+    }
+    .type-count { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); width: 28px; text-align: right; }
+
+    /* Donut wrapper */
+    .donut-wrap { position: relative; height: 190px; display:flex; align-items:center; justify-content:center; }
+    .donut-center {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      text-align: center; pointer-events: none;
+    }
+    .donut-center .dc-val { font-size: 1.4rem; font-weight: 800; color: var(--secondary); font-family:'Plus Jakarta Sans',sans-serif; line-height:1; }
+    .donut-center .dc-lbl { font-size: 0.65rem; color: var(--text-muted); font-weight: 600; letter-spacing:.04em; text-transform:uppercase; margin-top:2px; }
+
+    /* --- D3 Visualization Analytics Styles --- */
+    .d3-tooltip {
+      box-shadow: var(--shadow-lg);
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: opacity 0.15s ease;
+    }
+    .grid line {
+      stroke: #e2e8f0;
+      stroke-opacity: 0.8;
+      stroke-dasharray: 3, 3;
+      shape-rendering: crispEdges;
+    }
+    .grid path {
+      stroke-width: 0;
+    }
+    .axis-label {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      fill: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+    .axis path, .axis line {
+      stroke: var(--border);
+    }
+    .axis text {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.72rem;
+      fill: var(--text-muted);
+    }
+    @media(max-width: 640px) {
+      .axis text { font-size: 0.58rem; }
+      .axis-label { font-size: 0.58rem; }
+    }
+    .bar {
+      transition: fill 0.2s ease, opacity 0.2s ease;
+    }
+    .scatter-dot {
+      transition: stroke-width 0.2s ease, fill-opacity 0.2s ease, r 0.2s ease;
+    }
+    .scatter-dot:hover {
+      fill-opacity: 1;
+      stroke: var(--secondary);
+      stroke-width: 2.5px;
+    }
+
+    @media(max-width: 768px) {
+      .stat-row { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+      .s-card { padding: 0.8rem 0.6rem; }
+      .s-val { font-size: 1rem; }
+      .s-label { font-size: 0.6rem; }
+      
+      .chart-wrap { height: 220px; }
+      .donut-wrap { height: 220px; }
+      .map-card { height: 300px; }
+      .sidebar-panel, .a-card { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-frame">
+  
+  <main class="main-wrapper">
+    <div class="page-header" style="background: white; border-bottom: 1px solid var(--border); padding: 0.75rem 0; margin-bottom: 0.5rem;">
+      <div style="max-width: var(--container-max); margin: 0 auto; padding: 0 1rem; font-weight: 700; color: var(--secondary); font-family: 'Plus Jakarta Sans'; font-size: 1.1rem;">
+        Market Explorer
+      </div>
+    </div>
+    <div class="content-body">
+      
+      <!-- Map Filter Control Panel -->
+      <div class="filter-panel">
+        <div class="filter-panel-header">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+          <span>Filter Listings</span>
+        </div>
+        <div class="filter-panel-body">
+          <div class="filter-group">
+            <span class="filter-group-label">Category</span>
+            <div class="chip-row">
+              <div class="f-chip active" data-filter="type" data-val="All" onclick="setMapFilter(this, 'type', 'All')">All</div>
+              <div class="f-chip" data-filter="type" data-val="Boys" onclick="setMapFilter(this, 'type', 'Boys')">Boys Only</div>
+              <div class="f-chip" data-filter="type" data-val="Girls" onclick="setMapFilter(this, 'type', 'Girls')">Girls Only</div>
+              <div class="f-chip" data-filter="type" data-val="Mixed" onclick="setMapFilter(this, 'type', 'Mixed')">Mixed</div>
+            </div>
+          </div>
+          <div class="filter-group">
+            <span class="filter-group-label">Availability</span>
+            <div class="chip-row">
+              <div class="f-chip active" data-filter="status" data-val="all" onclick="setMapFilter(this, 'status', 'all')">All</div>
+              <div class="f-chip" data-filter="status" data-val="available" onclick="setMapFilter(this, 'status', 'available')">Available</div>
+              <div class="f-chip" data-filter="status" data-val="rented" onclick="setMapFilter(this, 'status', 'rented')">Rented Out</div>
+            </div>
+          </div>
+          <div class="filter-group">
+            <span class="filter-group-label">Max Rent Limit</span>
+            <div class="price-range-row">
+              <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;" id="map-price-min-label">LKR 0</span>
+              <span class="price-display" id="map-price-label">LKR 50,000</span>
+            </div>
+            <input type="range" id="map-price-slider" class="modern-slider" min="0" max="50000" step="50" value="50000" oninput="updateMapPriceFilter(this.value)">
+          </div>
+          <div class="filter-actions">
+            <button class="btn-apply-filter" onclick="applyDashboardFilters()">Apply</button>
+            <button class="btn-reset-filter" onclick="resetMapFilters()">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Map with overlay stats bar -->
+      <div class="map-wrapper">
+        <div class="map-card">
+          <div id="explore-map"></div>
+        </div>
+        <div class="map-overlay-bar" id="map-overlay-bar">
+          <div class="map-stat">
+            <div class="map-stat-val" id="ov-total">—</div>
+            <div class="map-stat-lbl">Total Listings</div>
+          </div>
+          <div class="map-stat-sep"></div>
+          <div class="map-stat">
+            <div class="map-stat-val" id="ov-available">—</div>
+            <div class="map-stat-lbl">Available Now</div>
+          </div>
+          <div class="map-stat-sep"></div>
+          <div class="map-stat">
+            <div class="map-stat-val" id="ov-mapped">—</div>
+            <div class="map-stat-lbl">Mapped on View</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Deep Analysis Section -->
+      <p class="section-label">Deep Analysis</p>
+      <div class="analysis-grid">
+        <div class="a-card">
+          <div class="a-card-title">
+            <span class="icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            </span>
+            Price Distribution
+          </div>
+          <div class="chart-wrap">
+            <div id="priceChart" style="width: 100%; height: 100%;"></div>
+          </div>
+        </div>
+
+        <div class="a-card">
+          <div class="a-card-title">
+            <span class="icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            </span>
+            Accommodation Type Split
+          </div>
+          <div class="donut-wrap">
+            <div id="typeDonut" style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;"></div>
+            <div class="donut-center">
+              <div class="dc-val" id="donut-center-val">—</div>
+              <div class="dc-lbl">Total</div>
+            </div>
+          </div>
+          <div class="type-row" id="type-breakdown"></div>
+        </div>
+
+        <div class="a-card a-card-full">
+          <div class="a-card-title">
+            <span class="icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="18" r="3"></circle><circle cx="6" cy="6" r="3"></circle><circle cx="18" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="6" y1="9" x2="6" y2="15"></line><line x1="9" y1="6" x2="15" y2="6"></line><line x1="9" y1="18" x2="15" y2="18"></line><line x1="18" y1="9" x2="18" y2="15"></line></svg>
+            </span>
+            Rent Price vs. Distance
+          </div>
+          <p style="font-size:0.82rem; color:var(--text-muted); margin-top:-0.5rem; margin-bottom:0.5rem;">Interactive distribution showing relation between rent and proximity to university.</p>
+          <div class="chart-wrap" style="height: 360px;">
+            <div id="scatterPlot" style="width: 100%; height: 100%;"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <div id="toast-container" class="toast-container"></div>
+</div>
+
+<script type="module" src="js/firebase-config.js"></script>
+<script type="module" src="js/navbar.js"></script>
+<script type="module">
+  import { db, ref, get } from "./js/firebase-config.js";
+
+  let allListings = [];
+  const suslCoords = [6.7146, 80.7872];
+
+  function haversine(lat1, lon1, lat2, lon2) {
+    const R = 6371; // km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  }
+
+  // Load listings from Firebase Realtime Database
+  async function loadListings() {
+    try {
+      const snap = await get(ref(db, "listings"));
+      allListings = [];
+      if (snap.exists()) {
+        Object.entries(snap.val()).forEach(([id, data]) => {
+          allListings.push({
+            id,
+            price: Number(data.price),
+            type: data.type || "Boys",
+            features: data.features || "",
+            rating: Number(data.rating) || 4.0,
+            lat: data.lat ? Number(data.lat) : null,
+            lng: data.lng ? Number(data.lng) : null,
+            title: data.title || "",
+            location: data.location || "",
+            url: `listing_detail.html?id=${id}`,
+            is_rented: !!data.is_rented
+          });
+        });
+      }
+
+      // Calculate distances
+      allListings.forEach(l => {
+        if (l.lat && l.lng) {
+          l.distance = haversine(suslCoords[0], suslCoords[1], l.lat, l.lng);
+        } else {
+          l.distance = null;
+        }
+      });
+
+      // Initialize UI controls
+      const slider = document.getElementById('map-price-slider');
+      if (slider && allListings.length) {
+        const prices = allListings.map(l => l.price);
+        const maxVal = Math.max(...prices, 50000);
+        slider.max = maxVal;
+        slider.value = maxVal;
+        document.getElementById('map-price-label').textContent = 'LKR ' + maxVal.toLocaleString();
+        filterState.maxPrice = maxVal;
+      }
+
+      updateDashboard();
+    } catch (e) {
+      console.error("Error loading listings from Realtime Database:", e);
+      showToast("Error loading properties from database.", "error");
+    }
+  }
+
+  /* --- D3 price counter animator helper --- */
+  function animateCounter(elementId, targetValue, isCurrency = false, prefix = '', decimals = 0) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    let start = 0;
+    const duration = 800;
+    const startTime = performance.now();
+    
+    function update(currentTime) {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easeProgress = 1 - Math.pow(1 - progress, 3);
+      const currentValue = start + (targetValue - start) * easeProgress;
+      
+      if (isCurrency) {
+        el.innerText = prefix + Math.round(currentValue).toLocaleString();
+      } else {
+        el.innerText = currentValue.toFixed(decimals);
+      }
+      
+      if (progress < 1) {
+        requestAnimationFrame(update);
+      } else {
+        if (isCurrency) {
+          el.innerText = prefix + Math.round(targetValue).toLocaleString();
+        } else {
+          el.innerText = decimals > 0 ? targetValue.toFixed(decimals) : Math.round(targetValue).toString();
+        }
+      }
+    }
+    requestAnimationFrame(update);
+  }
+
+  // Visualizing Charts with D3.js
+  const tooltip = d3.select("body").selectAll(".d3-tooltip").data([0]).join("div")
+    .attr("class", "d3-tooltip")
+    .style("opacity", 0)
+    .style("position", "absolute")
+    .style("background", "#1e293b")
+    .style("color", "#fff")
+    .style("padding", "10px 14px")
+    .style("border-radius", "8px")
+    .style("font-size", "0.8rem")
+    .style("font-family", "'Inter', sans-serif")
+    .style("pointer-events", "none")
+    .style("z-index", "2000");
+
+  const fmt = v => 'LKR ' + Math.round(v).toLocaleString();
+
+  // Price chart
+  const renderPriceChart = (filtered) => {
+    const container = d3.select("#priceChart");
+    container.html("");
+    
+    if (!filtered.length) {
+      container.html('<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:0.85rem;">No price data matching filters.</div>');
+      return;
+    }
+
+    const prices = filtered.map(l => l.price);
+    const catCounts = [0, 0, 0, 0];
+    prices.forEach(p => {
+      if (p < 12000) catCounts[0]++;
+      else if (p <= 16000) catCounts[1]++;
+      else if (p <= 20000) catCounts[2]++;
+      else catCounts[3]++;
+    });
+
+    const barData = [
+      { category: 'Budget', range: '(<12k)', count: catCounts[0], color: '#2ecc71' },
+      { category: 'Mid-range', range: '(12–16k)', count: catCounts[1], color: '#f39c12' },
+      { category: 'Premium', range: '(16–20k)', count: catCounts[2], color: '#27ae60' },
+      { category: 'Luxury', range: '(>20k)', count: catCounts[3], color: '#2980b9' }
+    ];
+
+    const width = container.node().clientWidth || 300;
+    const height = container.node().clientHeight || 220;
+    const margin = {top: 25, right: 10, bottom: 25, left: 30};
+
+    const svg = container.append("svg")
+      .attr("width", "100%")
+      .attr("height", "100%")
+      .attr("viewBox", `0 0 ${width} ${height}`)
+      .attr("preserveAspectRatio", "xMidYMid meet");
+
+    const xScale = d3.scaleBand()
+      .domain(barData.map(d => d.category))
+      .range([margin.left, width - margin.right])
+      .padding(0.4);
+
+    const yScale = d3.scaleLinear()
+      .domain([0, d3.max(barData, d => d.count) || 1])
+      .range([height - margin.bottom, margin.top])
+      .nice();
+
+    svg.append("g")
+      .attr("class", "grid")
+      .attr("transform", `translate(${margin.left},0)`)
+      .call(d3.axisLeft(yScale)
+        .tickSize(-width + margin.left + margin.right)
+        .tickFormat("")
+        .ticks(4)
+      );
+
+    svg.append("g")
+      .attr("transform", `translate(0, ${height - margin.bottom})`)
+      .attr("class", "axis")
+      .call(d3.axisBottom(xScale).tickSize(0).tickPadding(8))
+      .call(g => g.select(".domain").remove());
+
+    function roundedRectPath(x, y, w, h) {
+      if (h <= 0) return "";
+      const r = w / 2;
+      const activeRadius = Math.min(r, h);
+      return `
+        M ${x},${y + h}
+        L ${x},${y + activeRadius}
+        A ${activeRadius},${activeRadius} 0 0 1 ${x + activeRadius * 2},${y + activeRadius}
+        L ${x + w},${y + h}
+        Z
+      `;
+    }
+
+    svg.selectAll(".bar")
+      .data(barData)
+      .enter()
+      .append("path")
+      .attr("class", "bar")
+      .attr("d", d => roundedRectPath(xScale(d.category), height - margin.bottom, xScale.bandwidth(), 0))
+      .attr("fill", d => d.color)
+      .style("cursor", "pointer")
+      .on("mouseover", function(event, d) {
+        d3.select(this).transition().duration(200).style("opacity", 0.85).attr("transform", "translate(0, -3)");
+        tooltip.transition().duration(150).style("opacity", 0.95);
+        tooltip.html(`
+          <div style="font-weight: 700; margin-bottom: 2px;">${d.category}</div>
+          <div style="color: #cbd5e1; font-size: 0.75rem; margin-bottom: 4px;">${d.range}</div>
+          <div style="font-weight: 600;">${d.count} Properties</div>
+        `);
+      })
+      .on("mousemove", function(event) {
+        tooltip.style("left", (event.pageX + 12) + "px").style("top", (event.pageY - 20) + "px");
+      })
+      .on("mouseout", function(event) {
+        d3.select(this).transition().duration(200).style("opacity", 1).attr("transform", "translate(0, 0)");
+        tooltip.transition().duration(150).style("opacity", 0);
+      })
+      .transition()
+      .duration(800)
+      .attr("d", d => roundedRectPath(xScale(d.category), yScale(d.count), xScale.bandwidth(), height - margin.bottom - yScale(d.count)));
+  };
+
+  // Donut chart
+  const renderDonutChart = (filtered) => {
+    const container = d3.select("#typeDonut");
+    container.html("");
+    const typeBreakdown = document.getElementById('type-breakdown');
+    typeBreakdown.innerHTML = "";
+
+    const totalCount = filtered.length;
+    animateCounter('donut-center-val', totalCount);
+
+    if (!totalCount) {
+      container.html('<div style="color:var(--text-muted);font-size:0.85rem;">No data.</div>');
+      return;
+    }
+
+    const typeCounts = { Boys: 0, Girls: 0 };
+    filtered.forEach(l => {
+      if (typeCounts[l.type] !== undefined) typeCounts[l.type]++;
+    });
+
+    const donutData = [
+      { type: 'Boys', count: typeCounts.Boys, color: '#6366f1', label: 'Boys Only' },
+      { type: 'Girls', count: typeCounts.Girls, color: '#ec4899', label: 'Girls Only' }
+    ];
+
+    const width = 190;
+    const height = 190;
+    const radius = Math.min(width, height) / 2;
+
+    const svg = container.append("svg")
+      .attr("width", width)
+      .attr("height", height)
+      .append("g")
+      .attr("transform", `translate(${width/2}, ${height/2})`);
+
+    const pie = d3.pie().value(d => d.count).sort(null);
+    const arc = d3.arc().innerRadius(65).outerRadius(90);
+    const hoverArc = d3.arc().innerRadius(65).outerRadius(96);
+
+    const path = svg.selectAll("path")
+      .data(pie(donutData))
+      .enter()
+      .append("path")
+      .attr("fill", d => d.data.color)
+      .attr("stroke", "#ffffff")
+      .attr("stroke-width", 2)
+      .style("cursor", "pointer")
+      .each(function(d) { this._current = {startAngle: 0, endAngle: 0}; });
+
+    path.transition().duration(800)
+      .attrTween("d", function(d) {
+        const interpolate = d3.interpolate(this._current, d);
+        this._current = interpolate(0);
+        return function(t) { return arc(interpolate(t)); };
+      });
+
+    path.on("mouseover", function(event, d) {
+      d3.select(this).transition().duration(200).attr("d", hoverArc);
+      document.getElementById('donut-center-val').innerText = d.data.count;
+      document.querySelector('.donut-center .dc-lbl').innerText = d.data.label;
+      tooltip.transition().duration(150).style("opacity", 0.95);
+      tooltip.html(`
+        <div style="font-weight: 700; color:${d.data.color}; margin-bottom: 2px;">${d.data.label}</div>
+        <div style="font-weight: 600;">${d.data.count} Listings</div>
+      `);
+    })
+    .on("mousemove", function(event) {
+      tooltip.style("left", (event.pageX + 12) + "px").style("top", (event.pageY - 20) + "px");
+    })
+    .on("mouseout", function(event) {
+      d3.select(this).transition().duration(200).attr("d", arc);
+      document.getElementById('donut-center-val').innerText = totalCount;
+      document.querySelector('.donut-center .dc-lbl').innerText = "Total";
+      tooltip.transition().duration(150).style("opacity", 0);
+    });
+
+    donutData.forEach(d => {
+      const pct = totalCount ? Math.round(d.count/totalCount*100) : 0;
+      typeBreakdown.innerHTML += `
+        <div class="type-item">
+          <span class="type-label">
+            <div class="type-dot" style="background:${d.color}"></div>
+            ${d.type}
+          </span>
+          <div class="type-bar-bg">
+            <div class="type-bar-fill" style="width:0%; background:${d.color};" data-width="${pct}%"></div>
+          </div>
+          <span class="type-count">${d.count}</span>
+        </div>`;
+    });
+  };
+
+  // Scatter plot
+  const renderScatterPlot = (filtered) => {
+    const container = d3.select("#scatterPlot");
+    container.html("");
+    
+    const width = container.node().clientWidth || 600;
+    const height = container.node().clientHeight || 350;
+    const margin = {top: 20, right: 30, bottom: 45, left: 80};
+
+    const svg = container.append("svg")
+      .attr("width", "100%")
+      .attr("height", "100%")
+      .attr("viewBox", `0 0 ${width} ${height}`);
+
+    const scatterData = filtered.filter(l => l.lat && l.lng && l.distance !== null);
+
+    if (scatterData.length === 0) {
+      svg.append("text")
+        .attr("x", width / 2)
+        .attr("y", height / 2)
+        .attr("text-anchor", "middle")
+        .attr("fill", "#64748b")
+        .attr("font-family", "'Inter', sans-serif")
+        .text("No location coordinate data available for scatter plot.");
+      return;
+    }
+
+    const xMax = d3.max(scatterData, d => d.distance) || 2;
+    const xScale = d3.scaleLinear().domain([0, xMax * 1.08]).range([margin.left, width - margin.right]);
+
+    const yMax = d3.max(scatterData, d => d.price) || 25000;
+    const yScale = d3.scaleLinear().domain([0, yMax * 1.08]).range([height - margin.bottom, margin.top]);
+
+    svg.append("g")
+      .attr("class", "grid")
+      .attr("transform", `translate(${margin.left},0)`)
+      .call(d3.axisLeft(yScale).tickSize(-width + margin.left + margin.right).tickFormat("").ticks(6));
+
+    svg.append("g")
+      .attr("transform", `translate(0, ${height - margin.bottom})`)
+      .attr("class", "axis")
+      .call(d3.axisBottom(xScale).ticks(6).tickFormat(d => d.toFixed(1) + " km"));
+
+    svg.append("g")
+      .attr("transform", `translate(${margin.left}, 0)`)
+      .attr("class", "axis")
+      .call(d3.axisLeft(yScale).ticks(6).tickFormat(d => (d/1000) + "k LKR"));
+
+    const typeMapColors = { Boys: '#6366f1', Girls: '#ec4899' };
+
+    const lineData = [...scatterData].sort((a, b) => a.distance - b.distance);
+    const lineGenerator = d3.line().x(d => xScale(d.distance)).y(d => yScale(d.price)).curve(d3.curveMonotoneX);
+
+    svg.append("path")
+      .datum(lineData)
+      .attr("fill", "none")
+      .attr("stroke", "#f97316")
+      .attr("stroke-width", 3)
+      .attr("d", lineGenerator);
+
+    const dots = svg.selectAll(".scatter-dot")
+      .data(lineData)
+      .enter()
+      .append("circle")
+      .attr("class", "scatter-dot")
+      .attr("cx", d => xScale(d.distance))
+      .attr("cy", d => yScale(d.price))
+      .attr("r", 5)
+      .attr("fill", "#ffffff")
+      .attr("stroke", "#f97316")
+      .attr("stroke-width", 2.5)
+      .style("cursor", "pointer");
+
+    dots.on("mouseover", function(event, d) {
+      d3.select(this).transition().duration(200).attr("r", 8).attr("fill", "#f97316");
+      tooltip.transition().duration(150).style("opacity", 0.95);
+      tooltip.html(`
+        <div style="font-weight: 700; margin-bottom: 2px;">${d.title}</div>
+        <div style="font-size: 0.75rem; color: #cbd5e1; margin-bottom: 6px;">${d.location}</div>
+        <div style="font-weight: 700; color:#2dd4bf;">Rent: LKR ${d.price.toLocaleString()} /mo</div>
+        <div style="font-size: 0.75rem; color: #94a3b8;">Proximity: ${d.distance.toFixed(2)} km</div>
+      `);
+    })
+    .on("mousemove", function(event) {
+      tooltip.style("left", (event.pageX + 15) + "px").style("top", (event.pageY - 30) + "px");
+    })
+    .on("mouseout", function(event, d) {
+      d3.select(this).transition().duration(200).attr("r", 5).attr("fill", "#ffffff");
+      tooltip.transition().duration(150).style("opacity", 0);
+    })
+    .on("click", function(event, d) {
+      window.location.href = d.url;
+    });
+  };
+
+  /* ══ MAP setup ══ */
+  const map = L.map('explore-map').setView(suslCoords, 15);
+  window.leafletMap = map;
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
+
+  window.mapCircles = {};
+
+  var filterState = {
+    type: 'All',
+    status: 'all',
+    maxPrice: 50000
+  };
+
+  function updateDashboard() {
+    const filtered = allListings.filter(l => {
+      if (filterState.type !== 'All' && l.type !== filterState.type) return false;
+      if (filterState.status === 'available' && l.is_rented) return false;
+      if (filterState.status === 'rented' && !l.is_rented) return false;
+      if (filterState.maxPrice && l.price > filterState.maxPrice) return false;
+      return true;
+    });
+
+    // Clear old map layers
+    for (let title in window.mapCircles) {
+      map.removeLayer(window.mapCircles[title]);
+    }
+    window.mapCircles = {};
+
+    const mapListings = filtered.filter(l => l.lat && l.lng);
+
+    // Update overlay stats
+    document.getElementById('ov-total').textContent = filtered.length;
+    document.getElementById('ov-available').textContent = filtered.filter(l => !l.is_rented).length;
+    document.getElementById('ov-mapped').textContent = mapListings.length;
+
+    if (mapListings.length) {
+      const mPrices = mapListings.map(l=>l.price);
+      const mMin=Math.min(...mPrices), mMax=Math.max(...mPrices), mRange=mMax-mMin||1;
+      
+      mapListings.forEach(l => {
+        const pct=(l.price-mMin)/mRange;
+        const hue=((1-pct)*120).toFixed(0);
+        
+        const color=l.is_rented ? '#475569' : `hsl(${hue},100%,48%)`;
+        const fillColor=l.is_rented ? '#334155' : `hsl(${hue},100%,52%)`;
+        const strokeColor=l.is_rented ? '#64748b' : `hsl(${hue},100%,65%)`;
+        
+        const circle = L.circleMarker([l.lat, l.lng], {
+          color: strokeColor,
+          fillColor: fillColor,
+          fillOpacity: 0.85,
+          opacity: 0.95,
+          weight: 2.5,
+          radius: 12
+        }).addTo(map);
+
+        window.mapCircles[l.title] = circle;
+
+        circle.on('mouseover', function() {
+          this.setStyle({
+            fillOpacity: 0.85,
+            weight: 4.5,
+            opacity: 1,
+            color: l.is_rented ? '#94a3b8' : `hsl(${hue},100%,75%)`
+          });
+        });
+        circle.on('mouseout', function() {
+          this.setStyle({
+            fillOpacity: 0.45,
+            weight: 2.5,
+            opacity: 0.95,
+            color: strokeColor
+          });
+        });
+        
+        circle.bindPopup(`
+          <div style="font-family:'Inter',sans-serif;min-width:190px;padding:6px;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:4px;">
+              <strong style="display:block;font-size:0.95rem;line-height:1.2;">${l.title}</strong>
+              ${l.is_rented ? `<span style="background:#ef4444; color:white; font-size:0.65rem; font-weight:800; padding:2px 6px; border-radius:4px; text-transform:uppercase; letter-spacing:0.03em; white-space:nowrap; flex-shrink:0;">Rented</span>` : ''}
+            </div>
+            <p style="font-size:0.78rem;color:#64748b;margin-bottom:8px;">${l.location}</p>
+            <div style="font-weight:800;color:${l.is_rented ? '#64748b' : color};font-size:1.15rem;margin-bottom:10px;">${fmt(l.price)}<span style="font-size:0.7rem;font-weight:500;color:#94a3b8;">/mo</span></div>
+            <a href="${l.url}" style="display:block;text-align:center;background:#6366f1;color:white;border-radius:8px;padding:7px;font-size:0.8rem;font-weight:700;text-decoration:none;">View Details →</a>
+          </div>`);
+      });
+
+      if (Object.values(window.mapCircles).length) {
+        const group = new L.featureGroup(Object.values(window.mapCircles));
+        map.fitBounds(group.getBounds().pad(0.15));
+      }
+    }
+
+    renderPriceChart(filtered);
+    renderDonutChart(filtered);
+    renderScatterPlot(filtered);
+
+    // Animate donut item bars
+    setTimeout(() => {
+      document.querySelectorAll('.type-bar-fill').forEach(el => {
+        if (el.dataset.width) {
+          el.style.width = el.dataset.width;
+        }
+      });
+    }, 150);
+  }
+
+  // Throttle helper to prevent frame drops during slider drag
+  function throttle(func, limit) {
+    let inThrottle;
+    return function() {
+      const args = arguments;
+      const context = this;
+      if (!inThrottle) {
+        func.apply(context, args);
+        inThrottle = true;
+        setTimeout(() => inThrottle = false, limit);
+      }
+    }
+  }
+
+  const throttledUpdateDashboard = throttle(updateDashboard, 35);
+
+  // Filter bindings
+  window.setMapFilter = function(element, filterType, filterVal) {
+    document.querySelectorAll(`.f-chip[data-filter="${filterType}"]`).forEach(chip => {
+      chip.classList.remove('active');
+    });
+    element.classList.add('active');
+    filterState[filterType] = filterVal;
+    updateDashboard(); // Immediately update on chip clicks
+  };
+
+  window.updateMapPriceFilter = function(value) {
+    const parsedVal = parseInt(value) || 0;
+    const label = document.getElementById('map-price-label');
+    if (label) {
+      label.innerText = 'LKR ' + parsedVal.toLocaleString();
+    }
+    filterState.maxPrice = parsedVal;
+    throttledUpdateDashboard(); // Smooth real-time update on slider drags
+  };
+
+  window.applyDashboardFilters = function() {
+    updateDashboard();
+  };
+
+  window.resetMapFilters = function() {
+    filterState.type = 'All';
+    filterState.status = 'all';
+    filterState.maxPrice = 50000;
+
+    document.querySelectorAll('.f-chip').forEach(chip => chip.classList.remove('active'));
+    document.querySelectorAll('.f-chip[data-val="All"], .f-chip[data-val="all"]').forEach(chip => chip.classList.add('active'));
+
+    const slider = document.getElementById('map-price-slider');
+    if (slider) slider.value = 50000;
+    document.getElementById('map-price-label').textContent = 'LKR 50,000';
+
+    updateDashboard();
+  };
+
+  // Initial trigger
+  loadListings();
+</script>
+<script src="js/script.js"></script>
+</body>
+</html>

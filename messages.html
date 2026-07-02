@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Inbox | StayNest</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    :root {
+        --vh: 1vh;
+    }
+    @media (max-width: 768px) {
+        .messages-container {
+            height: calc(var(--vh) * 100 - 80px) !important;
+            display: flex !important;
+            flex-direction: column !important;
+            border: none !important;
+            background: transparent !important;
+            box-shadow: none !important;
+        }
+        .messages-container:not(.thread-active) .thread-view {
+            display: none !important;
+        }
+        .messages-container.thread-active .messages-sidebar {
+            display: none !important;
+        }
+    }
+  </style>
+</head>
+<body>
+<div class="app-frame">
+
+  <main class="main-wrapper">
+    <div class="content-body" style="padding: 0;">
+      
+      <div class="messages-container card" id="messages-container">
+          <!-- Sidebar: Conversations List -->
+          <div class="messages-sidebar">
+              <div class="sidebar-header">
+                  <h3>Recent Messages</h3>
+              </div>
+              <div class="conversations-list" id="conv-list">
+                  <p style="padding: 1.5rem; text-align: center; color: var(--text-muted);">Loading conversations...</p>
+              </div>
+          </div>
+
+          <!-- Main: Message Thread -->
+          <div class="thread-view">
+              <div id="thread-content" style="display: flex; flex-direction: column; height: 100%; width: 100%;">
+                  
+                  <div class="empty-thread">
+                      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--border)" stroke-width="1"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                      <h3>Your Conversations</h3>
+                      <p class="text-muted">Select a message from the sidebar to view the discussion.</p>
+                  </div>
+
+              </div>
+          </div>
+      </div>
+
+    </div>
+  </main>
+
+  <div id="toast-container" class="toast-container"></div>
+</div>
+
+<script type="module" src="js/firebase-config.js"></script>
+<script type="module" src="js/navbar.js"></script>
+<script type="module">
+  import { auth, db, ref, get, push, set, onValue, off } from "./js/firebase-config.js";
+
+  let currentUser = null;
+  let activeThreadId = null;
+  let activeListingId = null;
+  let unsubscribeThread = null;
+
+  // Read URL parameters for starting a new chat from Listing Details page
+  const urlParams = new URLSearchParams(window.location.search);
+  const targetListingId = urlParams.get("listingId");
+  const targetOwnerId = urlParams.get("ownerId");
+
+  auth.onAuthStateChanged(async (user) => {
+    if (!user) {
+      window.location.href = "auth.html";
+      return;
+    }
+    currentUser = user;
+
+    updateViewport();
+    loadConversationsList();
+
+    if (targetOwnerId) {
+      // Load or create a temporary thread state from URL parameters
+      selectThread(targetOwnerId, targetListingId || "");
+    }
+  });
+
+  // Fetch and group all messages dynamically using RTDB
+  function loadConversationsList() {
+    const messagesRef = ref(db, "messages");
+
+    onValue(messagesRef, async (snapshot) => {
+      const conversationsMap = {};
+
+      if (snapshot.exists()) {
+        const allMsgs = snapshot.val();
+        // Sort by created_at descending
+        const sorted = Object.entries(allMsgs).sort((a, b) => {
+          return new Date(b[1].created_at) - new Date(a[1].created_at);
+        });
+
+        for (const [msgId, msg] of sorted) {
+          if (msg.sender_id === currentUser.uid || msg.receiver_id === currentUser.uid) {
+            const otherId = msg.sender_id === currentUser.uid ? msg.receiver_id : msg.sender_id;
+            const listingId = msg.listing_id || "";
+            const key = `${otherId}_${listingId}`;
+
+            if (!conversationsMap[key]) {
+              conversationsMap[key] = {
+                msgId,
+                otherId,
+                listingId,
+                content: msg.content,
+                is_read: msg.is_read,
+                receiver_id: msg.receiver_id,
+                created_at: msg.created_at
+              };
+            }
+          }
+        }
+      }
+
+      const convList = document.getElementById("conv-list");
+      convList.innerHTML = "";
+
+      const items = Object.values(conversationsMap);
+      if (items.length === 0 && !targetOwnerId) {
+        convList.innerHTML = `<p style="padding: 1.5rem; text-align: center; color: var(--text-muted);">No messages yet.</p>`;
+        return;
+      }
+
+      for (const item of items) {
+        let otherName = "User";
+        try {
+          const userSnap = await get(ref(db, "users/" + item.otherId));
+          if (userSnap.exists()) otherName = userSnap.val().full_name;
+        } catch(err) {}
+
+        let listingTitle = "General Inquiry";
+        if (item.listingId) {
+          try {
+            const listSnap = await get(ref(db, "listings/" + item.listingId));
+            if (listSnap.exists()) listingTitle = listSnap.val().title;
+          } catch(err) {}
+        }
+
+        const isUnread = !item.is_read && item.receiver_id === currentUser.uid;
+        const timeString = item.created_at ? new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
+
+        const itemEl = document.createElement("div");
+        itemEl.className = `conversation-item ${activeThreadId === item.otherId && activeListingId === item.listingId ? 'active' : ''}`;
+        itemEl.style.cursor = "pointer";
+        itemEl.innerHTML = `
+          <div class="user-avatar">${otherName[0].toUpperCase()}</div>
+          <div class="conv-info">
+              <div class="conv-name">
+                  <span>${otherName}</span>
+                  <span class="conv-time">${timeString}</span>
+              </div>
+              <div class="conv-preview">
+                  <span class="listing-ref">${listingTitle}</span>
+                  <p>${item.content}</p>
+              </div>
+          </div>
+          ${isUnread ? '<div class="unread-dot"></div>' : ''}
+        `;
+
+        itemEl.addEventListener("click", () => selectThread(item.otherId, item.listingId));
+        convList.appendChild(itemEl);
+      }
+    });
+  }
+
+  async function selectThread(otherId, listingId) {
+    activeThreadId = otherId;
+    activeListingId = listingId;
+
+    // Toggle CSS class for responsive mobile view
+    document.getElementById("messages-container").classList.add("thread-active");
+
+    if (unsubscribeThread) {
+      unsubscribeThread();
+    }
+
+    const threadContent = document.getElementById("thread-content");
+    threadContent.innerHTML = `
+      <p style="padding: 2rem; text-align: center; color: var(--text-muted);">Loading conversation thread...</p>
+    `;
+
+    let otherName = "User";
+    try {
+      const userSnap = await get(ref(db, "users/" + otherId));
+      if (userSnap.exists()) otherName = userSnap.val().full_name;
+    } catch(err) {}
+
+    let listingTitle = "General Inquiry";
+    let isListingFound = false;
+    if (listingId) {
+      try {
+        const listSnap = await get(ref(db, "listings/" + listingId));
+        if (listSnap.exists()) {
+          listingTitle = listSnap.val().title;
+          isListingFound = true;
+        }
+      } catch(err) {}
+    }
+
+    // Build the Thread Header, Input area and empty messages container
+    threadContent.innerHTML = `
+      <div class="thread-header">
+          <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;">
+              <button id="back-to-list-btn" class="mobile-back-btn" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem; margin-right: 0.5rem;">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+              </button>
+              <div class="thread-user" style="min-width: 0; display: flex; align-items: center; gap: 8px;">
+                  <div class="user-avatar" style="width: 32px; height: 32px; font-size: 0.8rem;">${otherName[0].toUpperCase()}</div>
+                  <div style="min-width: 0;">
+                      <h4 style="font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0;">${otherName}</h4>
+                      <p class="text-muted" style="font-size: 0.7rem; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                          ${listingTitle}
+                      </p>
+                  </div>
+              </div>
+          </div>
+          ${isListingFound ? `
+            <a href="listing_detail.html?id=${listingId}" class="btn btn-outline btn-sm" style="padding: 6px 12px; font-size: 0.75rem; border-radius: 8px; flex-shrink: 0; text-decoration: none;">View Property</a>
+          ` : ""}
+      </div>
+
+      <div class="messages-thread" id="message-container">
+          <!-- Realtime messages loaded here -->
+      </div>
+
+      <div class="message-input-area">
+          <form id="send-message-form" class="message-form">
+              <textarea id="message-input" placeholder="Type your message here..." required></textarea>
+              <button type="submit" class="btn btn-primary">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+              </button>
+          </form>
+      </div>
+    `;
+
+    document.getElementById("back-to-list-btn").addEventListener("click", () => {
+      document.getElementById("messages-container").classList.remove("thread-active");
+    });
+
+    const msgContainer = document.getElementById("message-container");
+
+    // Start realtime subscription using RTDB onValue
+    const threadRef = ref(db, "messages");
+
+    const threadListener = onValue(threadRef, (snapshot) => {
+      msgContainer.innerHTML = "";
+      let foundMessages = 0;
+
+      if (snapshot.exists()) {
+        // Sort by created_at ascending
+        const sorted = Object.entries(snapshot.val()).sort((a, b) => {
+          return new Date(a[1].created_at) - new Date(b[1].created_at);
+        });
+
+        for (const [, msg] of sorted) {
+          const matchesParticipants =
+            (msg.sender_id === currentUser.uid && msg.receiver_id === otherId) ||
+            (msg.sender_id === otherId && msg.receiver_id === currentUser.uid);
+          const matchesListing = (msg.listing_id || "") === (listingId || "");
+
+          if (matchesParticipants && matchesListing) {
+            foundMessages++;
+            const timeString = msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
+            const isSent = msg.sender_id === currentUser.uid;
+
+            const wrapper = document.createElement("div");
+            wrapper.className = `message-wrapper ${isSent ? 'sent' : 'received'}`;
+            wrapper.innerHTML = `
+              <div class="message-bubble">
+                  ${msg.content}
+                  <span class="message-time">${timeString}</span>
+              </div>
+            `;
+            msgContainer.appendChild(wrapper);
+          }
+        }
+      }
+
+      if (foundMessages === 0) {
+        msgContainer.innerHTML = `
+          <div style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.85rem;">
+            No messages yet. Start the conversation by sending a message below!
+          </div>
+        `;
+      }
+      scrollToBottom();
+    });
+
+    // Store unsubscribe function (RTDB uses off() to detach)
+    unsubscribeThread = () => off(threadRef, 'value', threadListener);
+
+    // Form Submit
+    document.getElementById("send-message-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const input = document.getElementById("message-input");
+      const content = input.value.trim();
+      if (!content) return;
+
+      input.value = "";
+      try {
+        await push(ref(db, "messages"), {
+          sender_id: currentUser.uid,
+          receiver_id: otherId,
+          listing_id: listingId || "",
+          content: content,
+          is_read: false,
+          created_at: new Date().toISOString()
+        });
+      } catch(err) {
+        console.error(err);
+        showToast("Error sending message", "error");
+      }
+    });
+
+    // Focus input
+    setTimeout(() => {
+      const input = document.getElementById("message-input");
+      if (input) input.focus();
+    }, 150);
+  }
+
+  function scrollToBottom() {
+    const container = document.getElementById('message-container');
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
+  }
+
+  function updateViewport() {
+    const vh = (window.visualViewport ? window.visualViewport.height : window.innerHeight) * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+    scrollToBottom();
+  }
+
+  window.addEventListener('resize', updateViewport);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', updateViewport);
+    window.visualViewport.addEventListener('scroll', updateViewport);
+  }
+</script>
+<script src="js/script.js"></script>
+</body>
+</html>

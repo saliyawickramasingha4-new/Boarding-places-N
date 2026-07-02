@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Edit Property | StayNest</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app-frame">
+
+  <main class="main-wrapper">
+    <div class="content-body">
+      
+      <div class="edit-property-page" style="max-width: 700px; margin: 2rem auto; padding: 0 1rem; box-sizing: border-box;">
+          <div class="card" style="padding: 2rem 2.5rem; border-radius: 16px; background: #ffffff; border: 1px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+              <div class="text-center mb-4">
+                  <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--secondary); font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700;">Update Property Details</h2>
+                  <p class="text-muted" style="font-size: 0.875rem;">Modify the information for your boarding place.</p>
+              </div>
+
+              <form id="edit-property-form">
+                  <div class="input-group">
+                      <label>Property Title</label>
+                      <input type="text" id="edit-title" required/>
+                  </div>
+
+                  <div class="input-group">
+                      <label>Location Description</label>
+                      <input type="text" id="edit-location" required/>
+                  </div>
+
+                  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem;">
+                      <div class="input-group">
+                          <label>Price / Month (LKR)</label>
+                          <input type="number" id="edit-price" min="1000" required/>
+                      </div>
+                      <div class="input-group">
+                          <label>Category</label>
+                          <select id="edit-type" required style="width: 100%; height: 42px; border-radius: 8px; border: 1px solid var(--border); padding: 0 0.5rem;">
+                              <option value="Boys">Boys Only</option>
+                              <option value="Girls">Girls Only</option>
+                              <option value="Mixed">Mixed</option>
+                          </select>
+                      </div>
+                      <div class="input-group">
+                          <label>Owner Phone</label>
+                          <input type="text" id="edit-phone" placeholder="+94771234567" required>
+                      </div>
+                  </div>
+
+                  <div class="input-group">
+                      <label>Features (comma-separated)</label>
+                      <input type="text" id="edit-features"/>
+                  </div>
+
+                  <div class="input-group">
+                      <label>Property Description <span style="font-weight:400; color:var(--text-muted); font-size:0.8rem;">(shown to students)</span></label>
+                      <textarea id="edit-description" rows="4" placeholder="Describe your place..." style="resize:vertical; min-height:90px; width: 100%; border-radius: 8px; border: 1px solid var(--border); padding: 0.5rem; font-family: inherit; box-sizing: border-box;"></textarea>
+                  </div>
+
+                  <div class="input-group">
+                      <label>Upload New Photo <span style="font-weight:400; color:var(--text-muted); font-size:0.8rem;">(will replace current main photo)</span></label>
+                      <div style="border: 2px dashed var(--border); padding: 1.5rem; border-radius: var(--radius-md); text-align: center; background: var(--bg);">
+                          <input type="file" id="edit-media" accept="image/*" style="width: 100%; cursor: pointer;" />
+                      </div>
+                  </div>
+
+                  <!-- Google Maps Link Paste Section -->
+                  <div class="input-group" style="margin-bottom:1.75rem;">
+                      <label style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                          <span style="font-size:0.875rem; font-weight:600; color:var(--secondary); display:flex; align-items:center; gap:6px;">
+                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color: var(--primary);"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                              Property Location (Google Maps)
+                          </span>
+                          <a href="https://maps.google.com" target="_blank" rel="noopener" style="font-size:0.75rem; color:var(--primary); text-decoration:none; font-weight:500;">Open Google Maps ↗</a>
+                      </label>
+                      
+                      <div style="position:relative;">
+                          <input type="url" id="map_link_input" placeholder="Paste your Google Maps link here…" style="padding-right:2.5rem; width:100%; box-sizing: border-box;">
+                          <span id="map_link_icon" style="position:absolute;right:0.8rem;top:50%;transform:translateY(-50%);font-size:1.1rem;pointer-events:none;"></span>
+                      </div>
+                      
+                      <div id="map_link_status" style="margin-top:0.5rem; font-size:0.8rem; display:none; padding:0.5rem 0.75rem; border-radius:var(--radius-sm);"></div>
+                      
+                      <div id="faculty_distances_preview" style="margin-top:0.75rem; display:none; padding:0.75rem; border-radius:var(--radius-md); background:var(--bg); border:1px solid var(--border);">
+                          <h4 style="font-size:0.8rem; font-weight:700; color:var(--secondary); margin-bottom:0.5rem; display:flex; align-items:center; gap:6px;">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color: var(--primary);"><path d="M22 10v6M2 10v6M12 2L2 7l10 5 10-5-10-5z"></path><path d="M6 12v5c0 2 2.5 3 6 3s6-1 6-3v-5"></path></svg>
+                          Calculated Faculty Distances:
+                          </h4>
+                          <div id="faculty_distances_list" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap:0.4rem; font-size:0.72rem; color:var(--text);">
+                              <!-- Filled by JS -->
+                          </div>
+                      </div>
+                      
+                      <input type="hidden" id="lat_input">
+                      <input type="hidden" id="lng_input">
+                  </div>
+
+                  <div style="display: flex; gap: 1rem;">
+                    <a href="dashboard.html" class="btn btn-outline" style="flex: 1; text-align: center; line-height: 42px;">Cancel</a>
+                    <button type="submit" class="btn btn-primary" style="flex: 2;">Save Changes</button>
+                  </div>
+              </form>
+          </div>
+      </div>
+
+    </div>
+  </main>
+
+  <div id="toast-container" class="toast-container"></div>
+</div>
+
+<script type="module" src="js/firebase-config.js"></script>
+<script type="module" src="js/navbar.js"></script>
+<script type="module">
+  import { auth, db, ref, get, update } from "./js/firebase-config.js";
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const id = urlParams.get("id");
+  let currentImageUrl = "";
+
+  if (!id) {
+    window.location.href = "dashboard.html";
+  }
+
+  // Load current values
+  auth.onAuthStateChanged(async (user) => {
+    if (!user) {
+      window.location.href = "auth.html";
+      return;
+    }
+    
+    try {
+      const snap = await get(ref(db, "listings/" + id));
+      if (!snap.exists()) {
+        showToast("Property not found", "error");
+        setTimeout(() => { window.location.href = "dashboard.html"; }, 1500);
+        return;
+      }
+      const data = snap.val();
+
+      // Populate form
+      document.getElementById("edit-title").value = data.title || "";
+      document.getElementById("edit-location").value = data.location || "";
+      document.getElementById("edit-price").value = data.price || 0;
+      document.getElementById("edit-type").value = data.type || "Boys";
+      document.getElementById("edit-phone").value = data.phone || "";
+      document.getElementById("edit-features").value = data.features || "";
+      document.getElementById("edit-description").value = data.description || "";
+      document.getElementById("map_link_input").value = data.map_link || "";
+      document.getElementById("lat_input").value = data.lat || "";
+      document.getElementById("lng_input").value = data.lng || "";
+      currentImageUrl = data.image_url || "";
+
+      if (data.lat && data.lng) {
+        updateFacultyDistances(Number(data.lat), Number(data.lng));
+      }
+    } catch(err) {
+      console.error(err);
+      showToast("Error loading property", "error");
+    }
+  });
+
+  // Parse Maps URL
+  const mapInput = document.getElementById("map_link_input");
+  mapInput.addEventListener("input", (e) => {
+    const url = e.target.value.trim();
+    const statusEl = document.getElementById("map_link_status");
+    const iconEl = document.getElementById("map_link_icon");
+    const latInput = document.getElementById("lat_input");
+    const lngInput = document.getElementById("lng_input");
+
+    if (!url) {
+      statusEl.style.display = "none";
+      iconEl.textContent = "";
+      latInput.value = "";
+      lngInput.value = "";
+      updateFacultyDistances(null, null);
+      return;
+    }
+
+    let lat = null, lng = null, m;
+
+    m = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (m) { lat = parseFloat(m[1]); lng = parseFloat(m[2]); }
+
+    if (!lat) {
+      m = url.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
+      if (m) { lat = parseFloat(m[1]); lng = parseFloat(m[2]); }
+    }
+
+    if (!lat) {
+      m = url.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+      if (m) { lat = parseFloat(m[1]); lng = parseFloat(m[2]); }
+    }
+
+    if (lat !== null && lng !== null) {
+      latInput.value = lat.toFixed(7);
+      lngInput.value = lng.toFixed(7);
+      iconEl.textContent = '✓';
+      statusEl.style.display = 'block';
+      statusEl.style.background = '#f0fdf4';
+      statusEl.style.color = '#15803d';
+      statusEl.style.border = '1px solid #bbf7d0';
+      statusEl.innerHTML = `<strong>Coordinates extracted:</strong> ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+      updateFacultyDistances(lat, lng);
+    } else {
+      latInput.value = '';
+      lngInput.value = '';
+      iconEl.textContent = '✗';
+      statusEl.style.display = 'block';
+      statusEl.style.background = '#fef2f2';
+      statusEl.style.color = '#991b1b';
+      statusEl.style.border = '1px solid #fecaca';
+      if (url.includes("maps.app.goo.gl") || url.includes("goo.gl/maps")) {
+        statusEl.innerHTML = '<strong>Short Link Detected!</strong> maps.app.goo.gl links do not contain coordinates. Please open the link in your browser, copy the <strong>full URL from the browser address bar</strong> (containing `@latitude,longitude`), and paste it here.';
+      } else {
+        statusEl.innerHTML = '<strong>Could not resolve coordinates.</strong> Make sure to paste a full Google Maps URL containing coordinates (e.g. `@6.714,80.787`).';
+      }
+      updateFacultyDistances(null, null);
+    }
+  });
+
+  // Distances calculations
+  function updateFacultyDistances(lat, lng) {
+    const previewEl = document.getElementById('faculty_distances_preview');
+    const listEl = document.getElementById('faculty_distances_list');
+    if (!previewEl || !listEl) return;
+
+    if (!lat || !lng) {
+      previewEl.style.display = 'none';
+      listEl.innerHTML = '';
+      return;
+    }
+
+    const faculties = [
+      { name: "Social Science", lat: 6.70868988, lng: 80.7912375 },
+      { name: "Management Studies", lat: 6.70887199, lng: 80.7901203 },
+      { name: "Geomatics", lat: 6.70995020, lng: 80.7903207 },
+      { name: "Applied Science", lat: 6.71132532, lng: 80.7915687 },
+      { name: "Technology", lat: 6.71011936, lng: 80.7930851 },
+      { name: "Computing", lat: 6.71546278, lng: 80.7903577 },
+      { name: "Agriculture", lat: 6.70566473, lng: 80.7880711 }
+    ];
+
+    function haversine(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c * 1.45;
+    }
+
+    let html = '';
+    faculties.forEach(fac => {
+      const dist = haversine(lat, lng, fac.lat, fac.lng);
+      html += `
+        <div style="background:var(--bg-soft); border:1px solid var(--border); padding:0.6rem; border-radius:var(--radius-sm); display:flex; flex-direction:column; gap:2px; box-shadow:var(--shadow-sm);">
+            <span style="font-weight:700; color:var(--text-muted); font-size:0.7rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${fac.name}</span>
+            <span style="font-weight:800; color:var(--primary); font-size:0.85rem;">${dist.toFixed(2)} km</span>
+        </div>
+      `;
+    });
+
+    listEl.innerHTML = html;
+    previewEl.style.display = 'block';
+  }
+
+  // Handle Edit submission
+  document.getElementById("edit-property-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const title = document.getElementById("edit-title").value.trim();
+    const location = document.getElementById("edit-location").value.trim();
+    const price = Number(document.getElementById("edit-price").value) || 0;
+    const type = document.getElementById("edit-type").value;
+    const phone = document.getElementById("edit-phone").value.trim();
+    const features = document.getElementById("edit-features").value.trim();
+    const description = document.getElementById("edit-description").value.trim();
+    const mapLink = document.getElementById("map_link_input").value.trim();
+    const lat = document.getElementById("lat_input").value ? Number(document.getElementById("lat_input").value) : null;
+    const lng = document.getElementById("lng_input").value ? Number(document.getElementById("lng_input").value) : null;
+
+    const mediaInput = document.getElementById("edit-media");
+    let imageUrl = currentImageUrl;
+
+    if (mediaInput.files && mediaInput.files[0]) {
+      try {
+        imageUrl = await compressAndConvertToBase64(mediaInput.files[0]);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    try {
+      await update(ref(db, "listings/" + id), {
+        title,
+        location,
+        price,
+        type,
+        phone,
+        features,
+        description,
+        map_link: mapLink,
+        lat,
+        lng,
+        image_url: imageUrl
+      });
+
+      showToast("Property updated successfully!");
+      setTimeout(() => { window.location.href = "dashboard.html"; }, 1000);
+    } catch(err) {
+      console.error(err);
+      showToast("Failed to save changes", "error");
+    }
+  });
+
+  // Client-side image compression
+  function compressAndConvertToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const MAX_WIDTH = 600;
+          const scaleSize = MAX_WIDTH / img.width;
+          canvas.width = MAX_WIDTH;
+          canvas.height = img.height * scaleSize;
+
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+          const base64 = canvas.toDataURL("image/jpeg", 0.7);
+          resolve(base64);
+        };
+        img.onerror = (err) => reject(err);
+      };
+      reader.onerror = (err) => reject(err);
+    });
+  }
+</script>
+<script src="js/script.js"></script>
+</body>
+</html>
