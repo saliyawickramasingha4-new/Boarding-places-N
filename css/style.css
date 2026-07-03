@@ -1212,9 +1212,10 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; outl
     /* Hero mobile handled by hero-specific @media inside .hero CSS */
 
     /* 2-Column Grid for Mobile */
-    .listings-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.75rem;
+    .listings-grid, #listings-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        display: grid !important;
+        gap: 0.75rem !important;
     }
 
     .listing-card .card-image {
@@ -2016,12 +2017,21 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; outl
     .listing-card .card-footer-flex {
         flex-direction: column !important;
         gap: 0.4rem !important;
+        padding-top: 0.5rem !important;
+        margin-top: 0.25rem !important;
     }
 
-    .listing-card .card-footer-flex .btn {
+    .listing-card .card-footer-flex .btn,
+    .listing-card .card-footer-flex a.btn {
         width: 100% !important;
         font-size: 0.72rem !important;
         padding: 0.35rem 0.5rem !important;
+        min-height: auto !important;
+        line-height: normal !important;
+        height: auto !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
     }
 }
 
