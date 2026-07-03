@@ -1,49 +1,24 @@
-# Boarding Places — Capstone Project (DS2105)
+# StayNest — Boarding Places Portal for SUSL
 
-A Flask-based boarding place management system for SUSL students, featuring:
-- 🏠 Boarding listing search with map integration
-- 🔐 User authentication (Student & Owner roles)
-- 💬 In-app messaging between students and owners
-- ❤️ Favorites / saved stays
-- 📍 Haversine distance filter from SUSL faculties
+StayNest is a modern, fully-responsive serverless web application designed to help students near the Sabaragamuwa University of Sri Lanka (SUSL) find and book verified boarding places.
 
-## Project Structure
+## 🚀 Live Demo
+The application is hosted on GitHub Pages.
 
-```
-Boarding places/
-├── backend/
-│   ├── app/
-│   │   ├── routes/          # auth, user, listing routes
-│   │   ├── models/          # user, listing, favorite, message models
-│   │   ├── utils/           # Helper scripts and seeding functions
-│   │   ├── config.py        # App configuration & DB resolution
-│   │   └── __init__.py      # Flask Application Factory
-│   ├── requirements.txt     # Python dependencies
-│   ├── run.py               # Application entry point
-│   ├── unistay.db           # SQLite Database file
-│   └── .env                 # Environment variables
-├── frontend/
-│   ├── static/
-│   │   ├── css/style.css    # Stylesheet
-│   │   ├── js/script.js     # Client-side script
-│   │   ├── images/          # Image files
-│   │   └── uploads/         # User uploaded media
-│   └── templates/           # HTML templates (11 files)
-└── README.md
-```
+## 🛠️ Architecture (Serverless & Client-Side)
+Unlike traditional systems requiring a Flask backend and Python servers, StayNest runs entirely on the client-side, powered by:
+- **Frontend**: HTML5, Vanilla CSS3 (with premium dynamic styling), and Modern ES6 JavaScript.
+- **Backend-as-a-Service (BaaS)**: **Firebase Auth** (Google Single Sign-In & Email/Password) and **Firebase Realtime Database** for instant, secure data synchronization.
+- **Hosting**: GitHub Pages (Frontend static hosting).
 
-## Running the Application
+## ✨ Key Features
+- **Interactive Map Search**: Built-in map search with real-time walking distance calculations to different faculties of SUSL.
+- **Real-time Messaging**: Instant communication thread between students and property owners.
+- **Smart Mobile-First UI**: Fully optimized layout for mobile viewports including grid lists and details views.
+- **Google Maps Integration**: Direct coordinates extraction from Google Maps links.
+- **Real-Time Notifications**: Instant toast messages for newly arrived inbox inquiries.
 
-1. **Install Dependencies**:
-   ```bash
-   cd backend
-   pip install -r requirements.txt
-   ```
-
-2. **Start the Server**:
-   ```bash
-   python run.py
-   ```
-
-3. **Access the App**:
-   Visit: http://localhost:5000 in your browser.
+## ⚙️ How to Deploy on GitHub Pages
+1. Push this repository to GitHub.
+2. Go to **Settings** -> **Pages** in your GitHub repository, and select the branch you want to deploy from.
+3. **Important**: Go to your **Firebase Console** -> **Authentication** -> **Settings** -> **Authorized Domains** and add your GitHub Pages domain (e.g., `saliyawickramasingha4-new.github.io`).
