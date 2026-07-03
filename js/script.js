@@ -43,70 +43,7 @@ function initDropdowns() {
 
 // ─── FAVORITES SYSTEM ─────────────────────────────────────────────────────────
 function initFavorites() {
-  document.querySelectorAll('.fav-btn').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const id = btn.dataset.id;
-      
-      // Optimistic update: instantly toggle UI state
-      const wasActive = btn.classList.contains('active');
-      const svg = btn.querySelector('svg');
-      
-      if (wasActive) {
-        btn.classList.remove('active');
-        svg.setAttribute('fill', 'none');
-        showToast('Removed from saved places', 'info');
-      } else {
-        btn.classList.add('active');
-        svg.setAttribute('fill', 'currentColor');
-        showToast('Added to saved places');
-      }
-
-      try {
-        const resp = await fetch(`/toggle-favorite/${id}`, { method: 'POST' });
-        const data = await resp.json();
-        
-        const serverIsAdded = (data.status === 'added');
-        // If the server disagreed with our optimistic state, sync back
-        if (serverIsAdded !== !wasActive) {
-          if (serverIsAdded) {
-            btn.classList.add('active');
-            svg.setAttribute('fill', 'currentColor');
-          } else {
-            btn.classList.remove('active');
-            svg.setAttribute('fill', 'none');
-          }
-        }
-        
-        if (!serverIsAdded && window.location.pathname === '/my-stays') {
-          const card = btn.closest('.listing-card');
-          if (card) {
-            card.style.transition = 'all 0.3s ease';
-            card.style.transform = 'scale(0.8)';
-            card.style.opacity = '0';
-            setTimeout(() => {
-              card.remove();
-              if (document.querySelectorAll('.listing-card').length === 0) {
-                window.location.reload();
-              }
-            }, 300);
-          }
-        }
-      } catch (err) {
-        console.error('Error toggling favorite:', err);
-        showToast('Connection failed, status not saved', 'error');
-        // Revert UI on network error
-        if (wasActive) {
-          btn.classList.add('active');
-          svg.setAttribute('fill', 'currentColor');
-        } else {
-          btn.classList.remove('active');
-          svg.setAttribute('fill', 'none');
-        }
-      }
-    });
-  });
+  // Handled client-side directly via Firebase in page scripts
 }
 
 // ─── INITIALIZATION ──────────────────────────────────────────────────────────

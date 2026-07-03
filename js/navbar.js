@@ -1,4 +1,4 @@
-import { auth, db, onAuthStateChanged, signOut, ref, get, isFirebaseConfigured } from "./firebase-config.js";
+import { auth, db, onAuthStateChanged, signOut, ref, get, isFirebaseConfigured, onValue } from "./firebase-config.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   renderNavbar();
@@ -40,6 +40,7 @@ async function renderNavbar() {
             role: localStorage.getItem("temp_role") || "student"
           };
         }
+        setupIncomingMessageListener(user.uid);
       } catch (err) {
         console.error("Error fetching user data:", err);
       }
@@ -178,6 +179,54 @@ async function renderNavbar() {
         e.preventDefault();
         signOut(auth).then(() => { window.location.href = "index.html"; });
       });
+    }
+  });
+}
+
+let isInitialLoad = true;
+const pageLoadTime = new Date().toISOString();
+
+function setupIncomingMessageListener(userId) {
+  if (!db) return;
+  const messagesRef = ref(db, "messages");
+  onValue(messagesRef, (snapshot) => {
+    if (snapshot.exists()) {
+      const messages = snapshot.val();
+      
+      if (isInitialLoad) {
+        isInitialLoad = false;
+        return;
+      }
+
+      let latestMessage = null;
+      for (const [key, msg] of Object.entries(messages)) {
+        if (msg.receiver_id === userId && msg.created_at > pageLoadTime) {
+          if (!latestMessage || msg.created_at > latestMessage.created_at) {
+            latestMessage = msg;
+          }
+        }
+      }
+
+      if (latestMessage) {
+        const lastNotifiedKey = `last_notified_${userId}`;
+        const lastNotifiedTime = sessionStorage.getItem(lastNotifiedKey) || "";
+        if (latestMessage.created_at > lastNotifiedTime) {
+          sessionStorage.setItem(lastNotifiedKey, latestMessage.created_at);
+          
+          get(ref(db, `users/${latestMessage.sender_id}`)).then((userSnap) => {
+            const senderName = userSnap.exists() ? userSnap.val().full_name : "Someone";
+            
+            // Only notify if the user is not currently in the chat page
+            if (!window.location.pathname.endsWith("messages.html")) {
+              if (typeof window.showToast === 'function') {
+                window.showToast(`📩 New message from ${senderName}: "${latestMessage.content}"`, "info");
+              } else {
+                console.log(`New message from ${senderName}: "${latestMessage.content}"`);
+              }
+            }
+          });
+        }
+      }
     }
   });
 }

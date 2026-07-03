@@ -195,27 +195,6 @@
     }
     .btn-clear:hover { border-color: #cbd5e1; background: #f8fafc; color: var(--secondary); }
     
-    .btn-map-explore {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.65rem 1.5rem;
-      background: white;
-      border: 1.5px solid var(--border);
-      border-radius: 100px;
-      color: var(--secondary);
-      font-weight: 700;
-      font-size: 0.9rem;
-      text-decoration: none;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-      transition: all 0.2s;
-    }
-    .btn-map-explore:hover {
-      border-color: var(--primary);
-      color: var(--primary);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(99,102,241,0.15);
-    }
     @media (max-width: 900px) {
         .filter-panel-body { grid-template-columns: 1fr 1fr; }
         .filter-group { border-right: none; border-bottom: 1px solid var(--border); }
@@ -294,7 +273,7 @@
                   <span class="fg-label">Distance <span style="text-transform:none; font-weight:500; font-size:0.62rem; color:#94a3b8; letter-spacing:normal;">(from SUSL)</span></span>
                   <span id="km-label" class="dist-val">Any</span>
                 </div>
-                <input type="range" id="max_km_slider" class="modern-slider" min="0" max="20" step="0.5" value="0">
+                <input type="range" id="max_km_slider" class="modern-slider" min="0" max="20" step="0.1" value="0">
               </div>
 
               <!-- Group 5: Actions -->
@@ -336,6 +315,7 @@
   let allListings = [];
   let userFavorites = [];
   let currentUser = null;
+  let currentUserRole = null;
   const suslCoords = [6.7146, 80.7872];
 
   // Filters State
@@ -356,11 +336,12 @@
   // Load User, Favorites and Listings
   auth.onAuthStateChanged(async (user) => {
     currentUser = user;
+    currentUserRole = null;
     if (user) {
       // Get role
       const userSnap = await get(ref(db, "users/" + user.uid));
       if (userSnap.exists()) {
-        currentUser.role = userSnap.val().role;
+        currentUserRole = userSnap.val().role;
       }
       
       // Load user favorites
@@ -455,7 +436,7 @@
 
     filtered.forEach(l => {
       const isFav = userFavorites.includes(l.id);
-      const isStudent = currentUser && currentUser.role === "student";
+      const isStudent = currentUser && currentUserRole === "student";
 
       const card = document.createElement("div");
       card.className = `listing-card card ${l.is_rented ? 'rented-out' : ''}`;
@@ -475,7 +456,7 @@
               </button>
           ` : ''}
           <div style="position: absolute; bottom: 1rem; right: 1rem; z-index: 3;">
-              <span class="badge" style="background: white; color: var(--secondary); box-shadow: var(--shadow-sm); font-weight: 700;">LKR ${l.price.toLocaleString()}/mo</span>
+              <span class="badge" style="background: white; color: var(--secondary); box-shadow: var(--shadow-sm); font-weight: 700;">LKR ${(Number(l.price) || 0).toLocaleString()}/mo</span>
           </div>
         </div>
         <div class="card-body">
@@ -493,7 +474,8 @@
                     <a href="listing_detail.html?id=${l.id}" class="btn btn-primary" style="flex: 2; text-align: center;">View Details</a>
                     ${l.lat && l.lng ? `
                       <a href="https://www.google.com/maps/dir/?api=1&destination=${l.lat},${l.lng}" target="_blank" class="btn btn-outline" style="flex: 1; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 0.5rem 0.75rem; font-size: 0.8rem; font-weight: 700; white-space: nowrap;">
-                        📍 Go
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                        Go
                       </a>
                     ` : ''}
                 ` : `
@@ -551,21 +533,18 @@
     });
   }
 
-  // Throttle helper to prevent frame drops during slider drag
-  function throttle(func, limit) {
-    let inThrottle;
+  // Debounce helper to prevent lagging during continuous dragging
+  function debounce(func, delay) {
+    let timer;
     return function() {
-      const args = arguments;
       const context = this;
-      if (!inThrottle) {
-        func.apply(context, args);
-        inThrottle = true;
-        setTimeout(() => inThrottle = false, limit);
-      }
+      const args = arguments;
+      clearTimeout(timer);
+      timer = setTimeout(() => func.apply(context, args), delay);
     }
   }
 
-  const throttledRenderListings = throttle(renderListings, 35);
+  const debouncedRenderListings = debounce(renderListings, 150);
 
   // Setup slider listeners
   const slider = document.getElementById("max_km_slider");
@@ -573,12 +552,12 @@
   slider.addEventListener("input", (e) => {
     const val = parseFloat(e.target.value);
     kmLabel.textContent = val === 0 ? "Any" : `${val} km`;
-    throttledRenderListings(); // Real-time update
+    debouncedRenderListings(); // Smooth updates when user pauses dragging
   });
 
-  // Setup Price Input Real-time listeners
-  document.getElementById("min_price").addEventListener("input", () => throttledRenderListings());
-  document.getElementById("max_price").addEventListener("input", () => throttledRenderListings());
+  // Setup Price Input Real-time listeners (debounced)
+  document.getElementById("min_price").addEventListener("input", debouncedRenderListings);
+  document.getElementById("max_price").addEventListener("input", debouncedRenderListings);
 
   // Setup Chips selection
   document.querySelectorAll(".f-chip").forEach(chip => {

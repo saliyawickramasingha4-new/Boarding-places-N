@@ -114,7 +114,7 @@
     }
     .filter-panel-body {
       display: grid;
-      grid-template-columns: 240px 250px 1fr auto;
+      grid-template-columns: 240px 250px 1fr;
       gap: 0;
       align-items: stretch;
     }
@@ -209,7 +209,6 @@
     @media (max-width: 900px) {
       .filter-panel-body { grid-template-columns: 1fr 1fr; }
       .filter-group { border-right: none; border-bottom: 1px solid var(--border); }
-      .filter-actions { border-top: 1px solid var(--border); flex-direction: row; padding: 0.75rem 1.25rem; }
     }
     @media (max-width: 580px) {
       .filter-panel-body { grid-template-columns: 1fr; }
@@ -520,7 +519,6 @@
               <div class="f-chip active" data-filter="type" data-val="All" onclick="setMapFilter(this, 'type', 'All')">All</div>
               <div class="f-chip" data-filter="type" data-val="Boys" onclick="setMapFilter(this, 'type', 'Boys')">Boys Only</div>
               <div class="f-chip" data-filter="type" data-val="Girls" onclick="setMapFilter(this, 'type', 'Girls')">Girls Only</div>
-              <div class="f-chip" data-filter="type" data-val="Mixed" onclick="setMapFilter(this, 'type', 'Mixed')">Mixed</div>
             </div>
           </div>
           <div class="filter-group">
@@ -539,10 +537,7 @@
             </div>
             <input type="range" id="map-price-slider" class="modern-slider" min="0" max="50000" step="50" value="50000" oninput="updateMapPriceFilter(this.value)">
           </div>
-          <div class="filter-actions">
-            <button class="btn-apply-filter" onclick="applyDashboardFilters()">Apply</button>
-            <button class="btn-reset-filter" onclick="resetMapFilters()">Reset</button>
-          </div>
+          <!-- Apply/Reset buttons removed as filtering happens in real-time -->
         </div>
       </div>
 
@@ -1138,21 +1133,18 @@
     }, 150);
   }
 
-  // Throttle helper to prevent frame drops during slider drag
-  function throttle(func, limit) {
-    let inThrottle;
+  // Debounce helper to prevent lagging during continuous dragging
+  function debounce(func, delay) {
+    let timer;
     return function() {
-      const args = arguments;
       const context = this;
-      if (!inThrottle) {
-        func.apply(context, args);
-        inThrottle = true;
-        setTimeout(() => inThrottle = false, limit);
-      }
+      const args = arguments;
+      clearTimeout(timer);
+      timer = setTimeout(() => func.apply(context, args), delay);
     }
   }
 
-  const throttledUpdateDashboard = throttle(updateDashboard, 35);
+  const debouncedUpdateDashboard = debounce(updateDashboard, 150);
 
   // Filter bindings
   window.setMapFilter = function(element, filterType, filterVal) {
@@ -1171,7 +1163,7 @@
       label.innerText = 'LKR ' + parsedVal.toLocaleString();
     }
     filterState.maxPrice = parsedVal;
-    throttledUpdateDashboard(); // Smooth real-time update on slider drags
+    debouncedUpdateDashboard(); // Smooth real-time update on slider drags
   };
 
   window.applyDashboardFilters = function() {

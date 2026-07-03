@@ -137,8 +137,14 @@
         showToast("Property not found", "error");
         setTimeout(() => { window.location.href = "dashboard.html"; }, 1500);
         return;
-      }
       const data = snap.val();
+      
+      // Verify ownership
+      if (data.owner_id !== user.uid) {
+        showToast("Unauthorized access to this property", "error");
+        setTimeout(() => { window.location.href = "dashboard.html"; }, 1500);
+        return;
+      }
 
       // Populate form
       document.getElementById("edit-title").value = data.title || "";
@@ -284,6 +290,16 @@
     const mapLink = document.getElementById("map_link_input").value.trim();
     const lat = document.getElementById("lat_input").value ? Number(document.getElementById("lat_input").value) : null;
     const lng = document.getElementById("lng_input").value ? Number(document.getElementById("lng_input").value) : null;
+
+    // JavaScript Validation Checks
+    if (!title || !phone || !location) {
+      showToast("Please fill in all required fields (Title, Phone, Location Description).", "error");
+      return;
+    }
+    if (price <= 0) {
+      showToast("Monthly rent must be greater than 0 LKR.", "error");
+      return;
+    }
 
     const mediaInput = document.getElementById("edit-media");
     let imageUrl = currentImageUrl;
