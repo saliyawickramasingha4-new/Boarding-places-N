@@ -1,15 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
 
 :root {
-    /* --- Lando-Inspired Color Palette --- */
+
     --primary-h: 221;
     --primary-s: 83%;
     --primary-l: 53%;
-    --primary: hsl(var(--primary-h), var(--primary-s), var(--primary-l));   /* Royal Blue #2563eb */
+    --primary: hsl(var(--primary-h), var(--primary-s), var(--primary-l));   
     --primary-light: hsl(var(--primary-h), var(--primary-s), 95%);
     --primary-dark: hsl(var(--primary-h), var(--primary-s), 40%);
     
-    --secondary: #111827;    /* Near-black heading color */
+    --secondary: #111827;   
     --sidebar-bg: #ffffff;
     --sidebar-border: var(--border);
     
@@ -18,14 +18,14 @@
     --warning: #f59e0b;
     --info: #3b82f6;
     
-    --bg: #f0f2f7;           /* Soft off-white/lavender tint body */
+    --bg: #f0f2f7;           
     --bg-soft: #ffffff;
     --text: #374151;
     --text-muted: #6b7280;
     --border: #e5e7eb;
     --border-light: #f3f4f6;
     
-    /* --- Frame / Card Container --- */
+  
     --frame-bg: #ffffff;
     --frame-radius: 24px;
     --frame-shadow: 0 4px 32px rgba(100, 100, 160, 0.10);
